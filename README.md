@@ -13,37 +13,72 @@ on WhatsApp via a pre-filled `wa.me` link.
   with a clean layered split (UI → API routes → services/lib → Prisma) so a
   future native client (Android/iOS/React Native/Capacitor) can consume the
   same REST API and business logic without a backend rewrite.
-- **Prisma + SQLite** for local/sandbox development (zero external
-  dependencies). The schema deliberately avoids Postgres-only features, so
-  switching `prisma/schema.prisma`'s `datasource provider` to `"postgresql"`
-  and pointing `DATABASE_URL` at a real Postgres instance is the entire
-  production migration — no model rewrites.
+- **Prisma + Postgres** (Supabase-hosted) for the real app. Enum-like fields
+  stay `String` (validated at the app layer via Zod) rather than native
+  Postgres enums, so swapping the `datasource provider` back to `"sqlite"`
+  for a zero-dependency local setup is still a drop-in option with no model
+  rewrites — see `prisma/test/schema.prisma`, the exact SQLite mirror the
+  automated test suite runs against.
 - **JWT sessions** in an httpOnly cookie, bcrypt password hashing.
 - **Zod** for server-side request validation (defense in depth — never trust
   client-side validation alone).
 - **Tailwind CSS**, mobile-first, with a bottom nav on mobile and a classic
   navbar on desktop.
-- **Vitest** for unit + integration tests (route handlers are exercised
-  directly against a real Prisma-backed SQLite test database).
+- **Vitest** for unit + integration tests, run against a local SQLite
+  mirror of the production schema (see "Database" below for why).
 
 ## Getting started
 
 ```bash
 npm install
-cp .env.example .env   # fill in a real JWT_SECRET for anything but local dev
-npx prisma db push     # creates prisma/dev.db from the schema
+cp .env.example .env         # fill in DATABASE_URL (Supabase Postgres) + a real JWT_SECRET
+npx prisma generate
+npx prisma db push           # syncs prisma/schema.prisma to your Postgres database
 npm run dev
 ```
 
 Visit `http://localhost:3000`.
 
+## Database
+
+Production `DATABASE_URL` points at Postgres (this project is wired to a
+Supabase project by default — see `.env.example` for the connection-string
+shape). `prisma/schema.prisma` is the single source of truth for the schema.
+
+**Row Level Security** is enabled on every table in Supabase, with real,
+narrow policies:
+- Public **read-only** access (`anon` + `authenticated`, `SELECT` only — no
+  writes) on the tables DHIIL's own public pages already expose to anyone:
+  `ProfessionalProfile`, `Skill`, `ProfessionalSkill`, `Portfolio`, and
+  `Job` (restricted to `status = 'OPEN'`, mirroring the same visibility
+  rule the API enforces for closed/completed jobs).
+- **Default deny** (RLS enabled, zero policies, zero grants) on everything
+  else — `User`, `Gig`, `Application`, `Notification`, `Favorite`,
+  `Review`, `Report`, `Verification` — since DHIIL doesn't use Supabase
+  Auth (no `auth.uid()` to key per-user policies off), so those tables are
+  only ever reachable through the Next.js API's own JWT-authenticated,
+  ownership-checked routes.
+- The app's own Postgres role (used by `DATABASE_URL`, i.e. by Prisma) has
+  `rolbypassrls = true` — it's the table owner, so none of the above
+  affects normal app operation. RLS only governs the `anon`/`authenticated`
+  roles Supabase's client libraries and PostgREST use, which this app never
+  touches — everything goes through `src/lib/prisma.ts`.
+
+**Tests** run against `prisma/test/schema.prisma`, an exact SQLite mirror of
+the production models (kept in lockstep manually — same fields, same
+relations, same defaults). `npm test`'s `pretest`/`posttest` hooks swap the
+generated `@prisma/client` to/from that mirror automatically so `npm run
+dev`/`build` always end up with the Postgres-flavored client again.
+
 ## Scripts
 
-- `npm run dev` — start the dev server
+- `npm run dev` — start the dev server (regenerates the Postgres-targeted
+  Prisma client first)
 - `npm run build` / `npm start` — production build + serve
 - `npm run lint` — ESLint (Next's config)
 - `npx tsc --noEmit` — TypeScript check
-- `npm test` — Vitest unit + integration suite
+- `npm test` — Vitest unit + integration suite (SQLite mirror; regenerates
+  the Postgres client again afterward)
 
 ## Architecture
 
