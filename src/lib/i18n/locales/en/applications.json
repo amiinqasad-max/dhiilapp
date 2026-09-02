@@ -31,5 +31,8 @@
   "withdrawConfirmButton": "Withdraw application",
   "projectStartedTitle": "Project Started",
   "projectStartedDesc": "You're now working together on \"{job}\".",
-  "viewProjectButton": "View project"
+  "viewProjectButton": "View project",
+  "noRatingYet": "No reviews yet",
+  "portfolioItemsCount_one": "{count} portfolio item",
+  "portfolioItemsCount_other": "{count} portfolio items"
 }

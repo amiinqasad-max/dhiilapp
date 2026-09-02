@@ -31,5 +31,8 @@
   "withdrawConfirmButton": "Ka noqo codsiga",
   "projectStartedTitle": "Mashruuca waa Bilaabmay",
   "projectStartedDesc": "Hadda waad wada shaqaynaysaan \"{job}\".",
-  "viewProjectButton": "Fiiri mashruuca"
+  "viewProjectButton": "Fiiri mashruuca",
+  "noRatingYet": "Wali qiimeyn ma jirto",
+  "portfolioItemsCount_one": "{count} shaqo oo hore",
+  "portfolioItemsCount_other": "{count} shaqooyin oo hore"
 }

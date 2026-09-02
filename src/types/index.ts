@@ -222,6 +222,21 @@ export interface ProfessionalProfileDTO {
   whatsappAvailable: boolean;
 }
 
+/** Batch-loaded applicant summary attached to each row of
+ * GET /api/jobs/:id/applications — lets the client make an informed
+ * shortlist/accept decision without an extra request per applicant. */
+export interface ApplicantSummary {
+  title: string | null;
+  skills: string[];
+  portfolioCount: number;
+  averageRating: number | null;
+  reviewCount: number;
+}
+
+export interface ApplicationWithApplicantDTO extends ApplicationDTO {
+  applicant: ApplicantSummary;
+}
+
 export interface ApiError {
   error: string;
   code?: string;

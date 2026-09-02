@@ -9,7 +9,7 @@ import { formatDate, formatNumber } from "@/lib/i18n/format";
 import { apiFetch, translateApiError } from "@/lib/api-client";
 import { StatusBadge, EmptyState, ErrorState, Skeleton, ConfirmDialog, toast } from "@/components/ui/Misc";
 import { Button, LinkButton } from "@/components/ui/Button";
-import type { ApplicationDTO, ApplicationStatus, JobDTO, ProjectDTO } from "@/types";
+import type { ApplicationDTO, ApplicationStatus, ApplicationWithApplicantDTO, JobDTO, ProjectDTO } from "@/types";
 import { CLIENT_APPLICATION_TRANSITIONS } from "@/types";
 
 const statusUpdatedKey: Record<ApplicationStatus, string> = {
@@ -34,7 +34,7 @@ export default function JobApplicationsPage() {
   const { t, locale } = useTranslation();
   const router = useRouter();
   const [job, setJob] = useState<JobDTO | null>(null);
-  const [applications, setApplications] = useState<ApplicationDTO[] | null>(null);
+  const [applications, setApplications] = useState<ApplicationWithApplicantDTO[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [pendingAccept, setPendingAccept] = useState<ApplicationDTO | null>(null);
@@ -44,7 +44,7 @@ export default function JobApplicationsPage() {
     try {
       const [jobData, appsData] = await Promise.all([
         apiFetch<{ job: JobDTO }>(`/api/jobs/${id}`),
-        apiFetch<{ applications: ApplicationDTO[] }>(`/api/jobs/${id}/applications`),
+        apiFetch<{ applications: ApplicationWithApplicantDTO[] }>(`/api/jobs/${id}/applications`),
       ]);
       setJob(jobData.job);
       setApplications(appsData.applications);
@@ -138,16 +138,43 @@ export default function JobApplicationsPage() {
           return (
             <div key={app.id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-card">
               <div className="flex items-start justify-between gap-2">
-                <div>
+                <div className="min-w-0">
                   <Link href={`/professionals/${app.professionalId}`} className="font-semibold text-gray-900 hover:underline">
                     {app.professionalName}
                   </Link>
+                  {app.applicant.title && <p className="text-xs text-gray-600">{app.applicant.title}</p>}
                   <p className="text-xs text-gray-500">
                     {t("jobs.submittedOn", { date: formatDate(app.submittedAt, locale) })}
                   </p>
                 </div>
                 <StatusBadge status={app.status} />
               </div>
+
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+                {app.applicant.averageRating != null ? (
+                  <span className="text-amber-600">
+                    {t("reviews.averageRating", {
+                      rating: app.applicant.averageRating.toFixed(1),
+                      count: app.applicant.reviewCount,
+                    })}
+                  </span>
+                ) : (
+                  <span>{t("applications.noRatingYet")}</span>
+                )}
+                {app.applicant.portfolioCount > 0 && (
+                  <span>{t("applications.portfolioItemsCount", { count: app.applicant.portfolioCount })}</span>
+                )}
+              </div>
+              {app.applicant.skills.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {app.applicant.skills.slice(0, 6).map((s) => (
+                    <span key={s} className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-600">
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              )}
+
               <p className="mt-2 line-clamp-3 text-sm text-gray-600">{app.coverLetter}</p>
               <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
                 <span>{t("jobs.proposedLabel", { amount: formatNumber(app.proposedPrice, locale) })}</span>

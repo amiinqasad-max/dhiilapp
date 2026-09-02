@@ -16,6 +16,8 @@ import type {
   FavoriteJobSummary,
   FavoriteProfessionalSummary,
   Availability,
+  ApplicantSummary,
+  ApplicationWithApplicantDTO,
 } from "@/types";
 
 export function toJobDTO(
@@ -89,6 +91,16 @@ export function toApplicationDTO(app: {
     submittedAt: app.submittedAt.toISOString(),
     whatsappContactedAt: app.whatsappContactedAt ? app.whatsappContactedAt.toISOString() : null,
   };
+}
+
+/** Attaches a batch-loaded applicant summary to an application row — see
+ * GET /api/jobs/:id/applications, which loads all summaries for a job's
+ * applicants in two queries total, never one per applicant. */
+export function toApplicationWithApplicantDTO(
+  app: Parameters<typeof toApplicationDTO>[0],
+  applicant: ApplicantSummary
+): ApplicationWithApplicantDTO {
+  return { ...toApplicationDTO(app), applicant };
 }
 
 export function toProjectDTO(p: {
