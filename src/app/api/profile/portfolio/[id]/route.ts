@@ -8,9 +8,9 @@ async function assertOwnership(userId: string, portfolioId: string) {
     where: { id: portfolioId },
     include: { professionalProfile: true },
   });
-  if (!item) throw new ApiException(404, "Portfolio item not found.");
+  if (!item) throw new ApiException(404, "Portfolio item not found.", "PORTFOLIO_NOT_FOUND");
   if (item.professionalProfile.userId !== userId) {
-    throw new ApiException(403, "You can only modify your own portfolio.");
+    throw new ApiException(403, "You can only modify your own portfolio.", "PORTFOLIO_FORBIDDEN");
   }
   return item;
 }
@@ -19,7 +19,7 @@ export const PATCH = withErrorHandling(async (req: NextRequest, { params }: { pa
   const user = await requireRole("PROFESSIONAL");
   await assertOwnership(user.id, params.id);
   const body = await req.json().catch(() => null);
-  if (!body) throw new ApiException(400, "Invalid request body.");
+  if (!body) throw new ApiException(400, "Invalid request body.", "VALIDATION_ERROR");
   const data = parseOrThrow(portfolioItemSchema.partial(), body);
 
   const updated = await prisma.portfolio.update({

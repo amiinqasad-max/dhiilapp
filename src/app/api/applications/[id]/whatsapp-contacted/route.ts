@@ -8,9 +8,9 @@ import { ApiException, requireUser, withErrorHandling } from "@/lib/api-utils";
 export const POST = withErrorHandling(async (_req: Request, { params }: { params: { id: string } }) => {
   const user = await requireUser();
   const application = await prisma.application.findUnique({ where: { id: params.id } });
-  if (!application) throw new ApiException(404, "Application not found.");
+  if (!application) throw new ApiException(404, "Application not found.", "APPLICATION_NOT_FOUND");
   if (application.professionalId !== user.id) {
-    throw new ApiException(403, "You can only update your own applications.");
+    throw new ApiException(403, "You can only update your own applications.", "APPLICATION_FORBIDDEN");
   }
 
   const updated = await prisma.application.update({

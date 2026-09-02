@@ -1,0 +1,21 @@
+{
+  "title": "Xogtaada",
+  "subtitleProfessional": "Sii cusboonaysii si macaamiishu ay kuu heli karaan oo kuugu kalsoonaadaan.",
+  "subtitleClient": "Xirfadlayaashu halkan ayey kaaga soo xiriiraan, ee sii hay lambarka WhatsApp-kaaga oo cusub.",
+  "whatsappContactHeading": "Xiriirka WhatsApp",
+  "countryLabel": "Dalka",
+  "countryHint": "tusaale: SO, US",
+  "phoneNumberLabel": "Lambarka Taleefanka",
+  "isWhatsappLabel": "Lambarkan wuxuu ku jiraa WhatsApp",
+  "professionalTitleLabel": "Cinwaanka Xirfadeed",
+  "professionalTitlePlaceholder": "tusaale: Naqshadeeye",
+  "bioLabel": "Warbixin Kooban",
+  "bioPlaceholder": "U sheeg macaamiisha khibradaada…",
+  "hourlyRateLabel": "Qiimaha Saacaddiiba (USD)",
+  "availabilityLabel": "Xaaladda Diyaarnimada",
+  "skillsFieldLabel": "Xirfadaha",
+  "skillsFieldPlaceholder": "Kala sooc kama, tusaale: Naqshadda Summadda, Sumcadda",
+  "incompleteWarning": "Ku dar cinwaan, warbixin kooban, iyo ugu yaraan hal xirfad si aad xogtaada u dhammaystirto.",
+  "saveButton": "Kaydi Xogtaada",
+  "saved": "Xogtaada waa la kaydiyay."
+}

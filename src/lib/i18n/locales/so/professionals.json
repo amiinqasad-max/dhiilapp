@@ -1,0 +1,18 @@
+{
+  "findProfessionalsTitle": "Raadi Xirfadlayaal",
+  "findProfessionalsSubtitle": "Baadh xirfadlayaal diyaar u ah inay shaqeeyaan.",
+  "searchPlaceholder": "Raadi magac, cinwaan, ama faahfaahin…",
+  "emptyTitle": "Xirfadle lama helin",
+  "emptyDesc": "Isku day eray kale.",
+  "professionalOnDhiil": "Xirfadle ku jira DHIIL",
+  "perHour": "${amount}/saacaddiiba",
+  "contactOnWhatsapp": "WhatsApp kala xiriir",
+  "whatsappUnavailable": "WhatsApp lama heli karo",
+  "loginToContact": "Gal si aad WhatsApp ugu la xiriirto",
+  "aboutHeading": "Ku Saabsan",
+  "skillsHeading": "Xirfadaha",
+  "portfolioHeading": "Shaqooyinkii Hore",
+  "availableStatus": "La Heli Karo",
+  "busyStatus": "Mashquul",
+  "unavailableStatus": "La Heli Karin"
+}

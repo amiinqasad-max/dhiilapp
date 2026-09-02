@@ -1,0 +1,21 @@
+{
+  "title": "Your profile",
+  "subtitleProfessional": "Keep this up to date so clients can find and trust you.",
+  "subtitleClient": "Clients contact professionals here; keep your WhatsApp number current too.",
+  "whatsappContactHeading": "WhatsApp contact",
+  "countryLabel": "Country",
+  "countryHint": "e.g. SO, US",
+  "phoneNumberLabel": "Phone number",
+  "isWhatsappLabel": "This number is on WhatsApp",
+  "professionalTitleLabel": "Professional title",
+  "professionalTitlePlaceholder": "e.g. Graphic Designer",
+  "bioLabel": "Bio",
+  "bioPlaceholder": "Tell clients about your experience…",
+  "hourlyRateLabel": "Hourly rate (USD)",
+  "availabilityLabel": "Availability",
+  "skillsFieldLabel": "Skills",
+  "skillsFieldPlaceholder": "Comma-separated, e.g. Logo Design, Branding",
+  "incompleteWarning": "Add a title, bio, and at least one skill to complete your profile.",
+  "saveButton": "Save profile",
+  "saved": "Profile saved."
+}

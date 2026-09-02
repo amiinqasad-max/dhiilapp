@@ -1,0 +1,18 @@
+{
+  "findProfessionalsTitle": "Find Professionals",
+  "findProfessionalsSubtitle": "Browse skilled professionals ready to work.",
+  "searchPlaceholder": "Search by name, title, or bio…",
+  "emptyTitle": "No professionals found",
+  "emptyDesc": "Try a different search term.",
+  "professionalOnDhiil": "Professional on DHIIL",
+  "perHour": "${amount}/hr",
+  "contactOnWhatsapp": "Contact on WhatsApp",
+  "whatsappUnavailable": "WhatsApp not available",
+  "loginToContact": "Log in to contact on WhatsApp",
+  "aboutHeading": "About",
+  "skillsHeading": "Skills",
+  "portfolioHeading": "Portfolio",
+  "availableStatus": "Available",
+  "busyStatus": "Busy",
+  "unavailableStatus": "Unavailable"
+}

@@ -1,7 +1,18 @@
+"use client";
+
 import Link from "next/link";
-import type { ProfessionalProfileDTO } from "@/types";
+import { useTranslation } from "@/context/I18nContext";
+import { formatCurrency } from "@/lib/i18n/format";
+import type { Availability, ProfessionalProfileDTO } from "@/types";
+
+const availabilityKeys: Record<Availability, string> = {
+  AVAILABLE: "professionals.availableStatus",
+  BUSY: "professionals.busyStatus",
+  UNAVAILABLE: "professionals.unavailableStatus",
+};
 
 export function ProfessionalCard({ profile }: { profile: ProfessionalProfileDTO }) {
+  const { t, locale } = useTranslation();
   return (
     <Link
       href={`/professionals/${profile.userId}`}
@@ -18,10 +29,13 @@ export function ProfessionalCard({ profile }: { profile: ProfessionalProfileDTO 
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-gray-900">{profile.name}</p>
-          <p className="truncate text-xs text-gray-500">{profile.title || "Professional on DHIIL"}</p>
+          <p className="truncate text-xs text-gray-500">{profile.title || t("professionals.professionalOnDhiil")}</p>
         </div>
         {profile.hourlyRate != null && (
-          <span className="shrink-0 text-sm font-semibold text-brand-700">${profile.hourlyRate}/hr</span>
+          <span className="shrink-0 text-sm font-semibold text-brand-700">
+            {formatCurrency(profile.hourlyRate, locale)}
+            {t("jobs.budgetHourlySuffix")}
+          </span>
         )}
       </div>
       {profile.skills.length > 0 && (
@@ -35,7 +49,7 @@ export function ProfessionalCard({ profile }: { profile: ProfessionalProfileDTO 
       )}
       <div className="mt-2 flex items-center gap-3 text-xs text-gray-500">
         {profile.location && <span>{profile.location}</span>}
-        <span className="capitalize">{profile.availability.toLowerCase()}</span>
+        <span>{t(availabilityKeys[profile.availability])}</span>
       </div>
     </Link>
   );

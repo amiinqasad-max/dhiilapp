@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useTranslation } from "@/context/I18nContext";
 
 function HomeIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -47,13 +48,14 @@ function UserIcon(props: React.SVGProps<SVGSVGElement>) {
 export function BottomNav() {
   const pathname = usePathname();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const items = [
-    { href: "/", label: "Home", icon: HomeIcon },
-    { href: "/jobs", label: "Jobs", icon: BriefcaseIcon },
-    { href: "/professionals", label: "Pros", icon: UsersIcon },
-    { href: "/activity", label: "Activity", icon: BellIcon },
-    { href: user ? "/profile" : "/login", label: user ? "Profile" : "Log in", icon: UserIcon },
+    { href: "/", label: t("nav.home"), icon: HomeIcon },
+    { href: "/jobs", label: t("nav.jobs"), icon: BriefcaseIcon },
+    { href: "/professionals", label: t("nav.professionals"), icon: UsersIcon },
+    { href: "/activity", label: t("nav.activity"), icon: BellIcon },
+    { href: user ? "/profile" : "/login", label: user ? t("nav.profile") : t("common.logIn"), icon: UserIcon },
   ];
 
   // Hide chrome on auth pages to keep those flows focused.
@@ -63,7 +65,7 @@ export function BottomNav() {
     <nav
       className="fixed inset-x-0 bottom-0 z-50 border-t border-gray-200 bg-white/95 backdrop-blur safe-bottom md:hidden"
       style={{ height: "var(--bottom-nav-height)" }}
-      aria-label="Primary"
+      aria-label={t("nav.home")}
     >
       <ul className="mx-auto flex h-full max-w-md items-stretch justify-between px-2">
         {items.map(({ href, label, icon: Icon }) => {

@@ -7,8 +7,8 @@ import { toApplicationDTO } from "@/lib/mappers";
 export const GET = withErrorHandling(async (_req: Request, { params }: { params: { id: string } }) => {
   const user = await requireRole("CLIENT");
   const job = await prisma.job.findUnique({ where: { id: params.id } });
-  if (!job) throw new ApiException(404, "Job not found.");
-  if (job.clientId !== user.id) throw new ApiException(403, "You can only view applications to your own jobs.");
+  if (!job) throw new ApiException(404, "Job not found.", "JOB_NOT_FOUND");
+  if (job.clientId !== user.id) throw new ApiException(403, "You can only view applications to your own jobs.", "JOB_NOT_OWNER");
 
   const applications = await prisma.application.findMany({
     where: { jobId: params.id },

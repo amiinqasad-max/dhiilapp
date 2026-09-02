@@ -13,10 +13,11 @@ const adminUserUpdateSchema = z.object({
 // through this endpoint.
 export const PATCH = withErrorHandling(async (req: NextRequest, { params }: { params: { id: string } }) => {
   const admin = await requireRole("ADMIN");
-  if (admin.id === params.id) throw new ApiException(400, "You cannot deactivate your own admin account.");
+  if (admin.id === params.id)
+    throw new ApiException(400, "You cannot deactivate your own admin account.", "ADMIN_SELF_DEACTIVATE");
 
   const body = await req.json().catch(() => null);
-  if (!body) throw new ApiException(400, "Invalid request body.");
+  if (!body) throw new ApiException(400, "Invalid request body.", "VALIDATION_ERROR");
   const data = parseOrThrow(adminUserUpdateSchema, body);
 
   const user = await prisma.user.update({

@@ -112,8 +112,12 @@ export interface ApplicationDTO {
 export interface NotificationDTO {
   id: string;
   type: NotificationType;
+  /** English audit-trail copy — UI should prefer rendering from `type` +
+   * `meta` via i18n so the notification displays in the active language
+   * regardless of which language it was created under. */
   title: string;
   message: string;
+  meta: Record<string, string> | null;
   link: string | null;
   isRead: boolean;
   createdAt: string;

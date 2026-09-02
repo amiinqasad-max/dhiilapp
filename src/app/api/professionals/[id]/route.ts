@@ -16,7 +16,7 @@ export const GET = withErrorHandling(async (_req: Request, { params }: { params:
   });
 
   if (!profile || !profile.user.isActive || profile.user.role !== "PROFESSIONAL") {
-    throw new ApiException(404, "Professional not found.");
+    throw new ApiException(404, "Professional not found.", "PROFESSIONAL_NOT_FOUND");
   }
 
   return NextResponse.json({ professional: toProfessionalProfileDTO(profile) });

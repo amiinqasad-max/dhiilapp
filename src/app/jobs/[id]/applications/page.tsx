@@ -4,15 +4,40 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { apiFetch, ApiClientError } from "@/lib/api-client";
+import { useTranslation } from "@/context/I18nContext";
+import { formatDate, formatNumber } from "@/lib/i18n/format";
+import { apiFetch, translateApiError } from "@/lib/api-client";
 import { StatusBadge, EmptyState, ErrorState, Skeleton, toast } from "@/components/ui/Misc";
 import { Button } from "@/components/ui/Button";
 import type { ApplicationDTO, ApplicationStatus, JobDTO } from "@/types";
 import { CLIENT_APPLICATION_TRANSITIONS } from "@/types";
 
+const statusUpdatedKey: Record<ApplicationStatus, string> = {
+  PENDING: "applications.statusPending",
+  SHORTLISTED: "applications.statusShortlisted",
+  ACCEPTED: "applications.statusAccepted",
+  REJECTED: "applications.statusRejected",
+  WITHDRAWN: "applications.statusWithdrawn",
+  PROJECT: "applications.statusProject",
+  COMPLETED: "applications.statusCompleted",
+  REVIEWED: "applications.statusReviewed",
+};
+
+const actionLabelKey: Record<ApplicationStatus, string> = {
+  PENDING: "applications.statusPending",
+  SHORTLISTED: "applications.actionShortlist",
+  ACCEPTED: "applications.actionAccept",
+  REJECTED: "applications.actionReject",
+  WITHDRAWN: "applications.actionWithdraw",
+  PROJECT: "applications.actionProject",
+  COMPLETED: "applications.actionComplete",
+  REVIEWED: "applications.actionReview",
+};
+
 export default function JobApplicationsPage() {
   const { id } = useParams<{ id: string }>();
   const { user, loading: authLoading } = useAuth();
+  const { t, locale } = useTranslation();
   const router = useRouter();
   const [job, setJob] = useState<JobDTO | null>(null);
   const [applications, setApplications] = useState<ApplicationDTO[] | null>(null);
@@ -28,7 +53,7 @@ export default function JobApplicationsPage() {
       setJob(jobData.job);
       setApplications(appsData.applications);
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : "Failed to load applications.");
+      setError(translateApiError(err, t));
     }
   }
 
@@ -49,10 +74,10 @@ export default function JobApplicationsPage() {
         method: "PATCH",
         body: JSON.stringify({ status }),
       });
-      toast(`Application ${status.toLowerCase()}.`);
+      toast(t("applications.updated", { status: t(statusUpdatedKey[status]) }));
       load();
     } catch (err) {
-      toast(err instanceof ApiClientError ? err.message : "Failed to update application.", "error");
+      toast(translateApiError(err, t), "error");
     } finally {
       setBusyId(null);
     }
@@ -63,17 +88,17 @@ export default function JobApplicationsPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-6">
       <Link href={`/jobs/${id}`} className="text-sm text-brand-700">
-        ← Back to job
+        {t("jobs.backToJob")}
       </Link>
       <h1 className="mt-2 text-2xl font-bold text-gray-900">
-        Applications {job ? `for "${job.title}"` : ""}
+        {job ? t("jobs.applicationsForJob", { title: job.title }) : t("applications.myApplicationsTitle")}
       </h1>
 
       <div className="mt-5 space-y-3">
         {applications === null &&
           Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)}
         {applications && applications.length === 0 && (
-          <EmptyState title="No applications yet" description="Share this job on WhatsApp to reach more professionals." />
+          <EmptyState title={t("jobs.noApplicationsTitle")} description={t("jobs.noApplicationsDesc")} />
         )}
         {applications?.map((app) => {
           const actions = CLIENT_APPLICATION_TRANSITIONS[app.status] || [];
@@ -85,15 +110,15 @@ export default function JobApplicationsPage() {
                     {app.professionalName}
                   </Link>
                   <p className="text-xs text-gray-500">
-                    Submitted {new Date(app.submittedAt).toLocaleDateString()}
+                    {t("jobs.submittedOn", { date: formatDate(app.submittedAt, locale) })}
                   </p>
                 </div>
                 <StatusBadge status={app.status} />
               </div>
               <p className="mt-2 line-clamp-3 text-sm text-gray-600">{app.coverLetter}</p>
               <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
-                <span>Proposed: ${app.proposedPrice.toLocaleString()}</span>
-                <span>Delivery: {app.deliveryTime}</span>
+                <span>{t("jobs.proposedLabel", { amount: formatNumber(app.proposedPrice, locale) })}</span>
+                <span>{t("jobs.deliveryLabel", { time: app.deliveryTime })}</span>
               </div>
               {actions.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -105,7 +130,7 @@ export default function JobApplicationsPage() {
                       loading={busyId === app.id}
                       onClick={() => updateStatus(app.id, status)}
                     >
-                      {status === "SHORTLISTED" ? "Shortlist" : status.charAt(0) + status.slice(1).toLowerCase()}
+                      {t(actionLabelKey[status])}
                     </Button>
                   ))}
                 </div>

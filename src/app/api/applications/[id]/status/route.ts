@@ -17,16 +17,16 @@ export const PATCH = withErrorHandling(async (req: NextRequest, { params }: { pa
     where: { id: params.id },
     include: { job: true, professional: { select: { name: true } } },
   });
-  if (!application) throw new ApiException(404, "Application not found.");
+  if (!application) throw new ApiException(404, "Application not found.", "APPLICATION_NOT_FOUND");
 
   const isClientOwner = user.role === "CLIENT" && application.job.clientId === user.id;
   const isProfessionalOwner = user.role === "PROFESSIONAL" && application.professionalId === user.id;
   if (!isClientOwner && !isProfessionalOwner) {
-    throw new ApiException(403, "You do not have permission to update this application.");
+    throw new ApiException(403, "You do not have permission to update this application.", "APPLICATION_FORBIDDEN");
   }
 
   const body = await req.json().catch(() => null);
-  if (!body) throw new ApiException(400, "Invalid request body.");
+  if (!body) throw new ApiException(400, "Invalid request body.", "VALIDATION_ERROR");
   const { status: nextStatus } = parseOrThrow(applicationStatusSchema, body);
 
   const allowed = isClientOwner
@@ -36,7 +36,8 @@ export const PATCH = withErrorHandling(async (req: NextRequest, { params }: { pa
   if (!allowed.includes(nextStatus as ApplicationStatus)) {
     throw new ApiException(
       400,
-      `Cannot change application status from ${application.status} to ${nextStatus}.`
+      `Cannot change application status from ${application.status} to ${nextStatus}.`,
+      "INVALID_STATUS_TRANSITION"
     );
   }
 

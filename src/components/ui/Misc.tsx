@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
+import { useTranslation } from "@/context/I18nContext";
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
@@ -21,11 +22,30 @@ const badgeColors: Record<string, string> = {
   REVIEWED: "bg-teal-50 text-teal-700",
 };
 
+// Job statuses (OPEN/CLOSED/COMPLETED) live in jobs.json, application
+// statuses in applications.json — COMPLETED is shared by both.
+const statusKeys: Record<string, string> = {
+  OPEN: "jobs.statusOpen",
+  CLOSED: "jobs.statusClosed",
+  COMPLETED: "applications.statusCompleted",
+  PENDING: "applications.statusPending",
+  SHORTLISTED: "applications.statusShortlisted",
+  ACCEPTED: "applications.statusAccepted",
+  REJECTED: "applications.statusRejected",
+  WITHDRAWN: "applications.statusWithdrawn",
+  PROJECT: "applications.statusProject",
+  REVIEWED: "applications.statusReviewed",
+  DISMISSED: "admin.reportStatusDismissed",
+  ACTIONED: "admin.reportStatusActioned",
+};
+
 export function StatusBadge({ status }: { status: string }) {
+  const { t } = useTranslation();
   const cls = badgeColors[status] || "bg-gray-100 text-gray-700";
+  const key = statusKeys[status];
   return (
     <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${cls}`}>
-      {status.charAt(0) + status.slice(1).toLowerCase()}
+      {key ? t(key) : status}
     </span>
   );
 }
@@ -49,6 +69,7 @@ export function EmptyState({
 }
 
 export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border border-red-200 bg-red-50 px-6 py-10 text-center">
       <p className="text-sm font-medium text-red-700">{message}</p>
@@ -57,7 +78,7 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
           onClick={onRetry}
           className="mt-3 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
         >
-          Retry
+          {t("common.retry")}
         </button>
       )}
     </div>

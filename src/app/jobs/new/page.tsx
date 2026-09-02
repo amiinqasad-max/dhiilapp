@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { apiFetch, ApiClientError } from "@/lib/api-client";
+import { useTranslation } from "@/context/I18nContext";
+import { apiFetch, translateApiError } from "@/lib/api-client";
 import { Input, Textarea, Select } from "@/components/ui/Field";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { WhatsAppButton } from "@/components/marketplace/WhatsAppButton";
@@ -12,6 +13,7 @@ import type { JobDTO } from "@/types";
 
 export default function NewJobPage() {
   const { user, loading: authLoading } = useAuth();
+  const { t } = useTranslation();
   const router = useRouter();
 
   const [title, setTitle] = useState("");
@@ -53,11 +55,11 @@ export default function NewJobPage() {
       };
       const data = await apiFetch<{ job: JobDTO }>("/api/jobs", { method: "POST", body: JSON.stringify(payload) });
       setPublished(data.job);
-      toast("Job published!");
+      toast(t("jobs.publishedTitle"));
       const link = await apiFetch<{ link: string }>(`/api/jobs/${data.job.id}/whatsapp-share-link`);
       setWaLink(link.link);
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : "Failed to publish job.");
+      setError(translateApiError(err, t));
     } finally {
       setSaving(false);
     }
@@ -69,17 +71,15 @@ export default function NewJobPage() {
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-100 text-brand-700">
           ✓
         </div>
-        <h1 className="mt-4 text-2xl font-bold text-gray-900">Job Published</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          &ldquo;{published.title}&rdquo; is now searchable on DHIIL.
-        </p>
+        <h1 className="mt-4 text-2xl font-bold text-gray-900">{t("jobs.publishedTitle")}</h1>
+        <p className="mt-1 text-sm text-gray-500">{t("jobs.publishedDesc", { title: published.title })}</p>
         <div className="mt-6 space-y-3">
-          <WhatsAppButton link={waLink} label="Share on WhatsApp" fullWidth size="lg" />
+          <WhatsAppButton link={waLink} label={t("whatsapp.shareOnWhatsapp")} fullWidth size="lg" />
           <LinkButton href={`/jobs/${published.id}`} variant="outline" fullWidth size="lg">
-            View job
+            {t("jobs.viewJob")}
           </LinkButton>
           <LinkButton href="/dashboard" variant="ghost" fullWidth>
-            Go to dashboard
+            {t("common.goToDashboard")}
           </LinkButton>
         </div>
       </div>
@@ -88,26 +88,54 @@ export default function NewJobPage() {
 
   return (
     <div className="mx-auto max-w-lg px-4 py-6">
-      <h1 className="text-2xl font-bold text-gray-900">Post a job</h1>
-      <p className="mt-1 text-sm text-gray-500">Tell professionals what you need done.</p>
+      <h1 className="text-2xl font-bold text-gray-900">{t("jobs.postJobTitle")}</h1>
+      <p className="mt-1 text-sm text-gray-500">{t("jobs.postJobSubtitle")}</p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        <Input label="Job title" required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Design a logo for my bakery" />
-        <Textarea label="Description" required value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the work, requirements, and expectations…" />
-        <Input label="Category" required value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. Design, Writing, Development" />
+        <Input
+          label={t("jobs.titleLabel")}
+          required
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder={t("jobs.titlePlaceholder")}
+        />
+        <Textarea
+          label={t("jobs.descriptionLabel")}
+          required
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder={t("jobs.descriptionPlaceholder")}
+        />
+        <Input
+          label={t("jobs.categoryLabel")}
+          required
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          placeholder={t("jobs.categoryFieldPlaceholder")}
+        />
         <div className="grid grid-cols-2 gap-3">
-          <Input label="Budget (USD)" type="number" min={1} required value={budget} onChange={(e) => setBudget(e.target.value)} />
-          <Select label="Budget type" value={budgetType} onChange={(e) => setBudgetType(e.target.value)}>
-            <option value="FIXED">Fixed price</option>
-            <option value="HOURLY">Hourly</option>
+          <Input label={t("jobs.budgetLabel")} type="number" min={1} required value={budget} onChange={(e) => setBudget(e.target.value)} />
+          <Select label={t("jobs.budgetTypeLabel")} value={budgetType} onChange={(e) => setBudgetType(e.target.value)}>
+            <option value="FIXED">{t("jobs.budgetTypeFixed")}</option>
+            <option value="HOURLY">{t("jobs.budgetTypeHourly")}</option>
           </Select>
         </div>
-        <Input label="Location (optional)" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Remote, or a city" />
-        <Input label="Skills needed" value={skills} onChange={(e) => setSkills(e.target.value)} placeholder="Comma-separated, e.g. Figma, Illustrator" />
-        <Input label="Deadline (optional)" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+        <Input
+          label={t("jobs.locationOptionalLabel")}
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          placeholder={t("jobs.locationPlaceholder")}
+        />
+        <Input
+          label={t("jobs.skillsNeededLabel")}
+          value={skills}
+          onChange={(e) => setSkills(e.target.value)}
+          placeholder={t("jobs.skillsPlaceholder")}
+        />
+        <Input label={t("jobs.deadlineOptionalLabel")} type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
         {error && <p className="text-sm text-red-600">{error}</p>}
         <Button type="submit" fullWidth size="lg" loading={saving}>
-          Publish job
+          {t("jobs.publishButton")}
         </Button>
       </form>
     </div>

@@ -5,6 +5,7 @@ import { applicationCreateSchema, parseOrThrow } from "@/lib/validation";
 import { toApplicationDTO } from "@/lib/mappers";
 import { NotificationEvents } from "@/services/notification-service";
 import { generateWhatsAppLink, WhatsAppTemplates } from "@/lib/whatsapp";
+import { getServerLocale } from "@/lib/i18n/server";
 
 // Professional applies to a job. Application is saved to the database
 // FIRST, a notification is created for the client, and only then is a
@@ -14,17 +15,17 @@ export const POST = withErrorHandling(async (req: NextRequest, { params }: { par
   const user = await requireRole("PROFESSIONAL");
 
   const job = await prisma.job.findUnique({ where: { id: params.id }, include: { client: true } });
-  if (!job) throw new ApiException(404, "Job not found.");
-  if (job.status !== "OPEN") throw new ApiException(400, "This job is no longer accepting applications.");
-  if (job.clientId === user.id) throw new ApiException(400, "You cannot apply to your own job.");
+  if (!job) throw new ApiException(404, "Job not found.", "JOB_NOT_FOUND");
+  if (job.status !== "OPEN") throw new ApiException(400, "This job is no longer accepting applications.", "JOB_CLOSED");
+  if (job.clientId === user.id) throw new ApiException(400, "You cannot apply to your own job.", "CANNOT_APPLY_OWN_JOB");
 
   const existing = await prisma.application.findUnique({
     where: { jobId_professionalId: { jobId: job.id, professionalId: user.id } },
   });
-  if (existing) throw new ApiException(409, "You have already applied to this job.");
+  if (existing) throw new ApiException(409, "You have already applied to this job.", "ALREADY_APPLIED");
 
   const body = await req.json().catch(() => null);
-  if (!body) throw new ApiException(400, "Invalid request body.");
+  if (!body) throw new ApiException(400, "Invalid request body.", "VALIDATION_ERROR");
   const data = parseOrThrow(applicationCreateSchema, body);
 
   if (data.portfolioId) {
@@ -33,7 +34,7 @@ export const POST = withErrorHandling(async (req: NextRequest, { params }: { par
       include: { professionalProfile: true },
     });
     if (!portfolio || portfolio.professionalProfile.userId !== user.id) {
-      throw new ApiException(400, "Invalid portfolio selection.");
+      throw new ApiException(400, "Invalid portfolio selection.", "INVALID_PORTFOLIO_SELECTION");
     }
   }
 
@@ -62,17 +63,20 @@ export const POST = withErrorHandling(async (req: NextRequest, { params }: { par
       const portfolio = await prisma.portfolio.findUnique({ where: { id: data.portfolioId } });
       portfolioUrl = portfolio?.projectUrl || undefined;
     }
-    const message = WhatsAppTemplates.application({
-      jobTitle: job.title,
-      category: job.category,
-      professionalName: user.name,
-      skills: job.skills ? job.skills.split(",").filter(Boolean) : [],
-      proposedPrice: data.proposedPrice,
-      deliveryTime: data.deliveryTime,
-      coverLetter: data.coverLetter,
-      portfolioUrl,
-      applicationUrl: `${appUrl}/jobs/${job.id}`,
-    });
+    const message = WhatsAppTemplates.application(
+      {
+        jobTitle: job.title,
+        category: job.category,
+        professionalName: user.name,
+        skills: job.skills ? job.skills.split(",").filter(Boolean) : [],
+        proposedPrice: data.proposedPrice,
+        deliveryTime: data.deliveryTime,
+        coverLetter: data.coverLetter,
+        portfolioUrl,
+        applicationUrl: `${appUrl}/jobs/${job.id}`,
+      },
+      getServerLocale()
+    );
     waLink = generateWhatsAppLink(job.client.phoneNumber, job.client.phoneCountry, message);
   }
 

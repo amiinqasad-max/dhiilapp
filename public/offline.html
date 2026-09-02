@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="so">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -37,9 +37,31 @@
 <body>
   <div class="card">
     <div class="badge">D</div>
-    <h1>You&rsquo;re offline</h1>
-    <p>DHIIL couldn&rsquo;t reach the network. Some previously visited pages may still be available — check your connection and try again.</p>
-    <button onclick="location.reload()">Retry</button>
+    <h1 data-so="Internet Ma Haysatid" data-en="You're offline">Internet Ma Haysatid</h1>
+    <p data-so="DHIIL ma gaarin karin shabakadda. Boggaga hore la soo booqday ayaa laga yaabaa inay wali diyaar yihiin — hubi xiriirkaaga oo isku day mar kale." data-en="DHIIL couldn't reach the network. Some previously visited pages may still be available — check your connection and try again.">
+      DHIIL ma gaarin karin shabakadda. Boggaga hore la soo booqday ayaa laga yaabaa inay wali diyaar yihiin — hubi xiriirkaaga oo isku day mar kale.
+    </p>
+    <button onclick="location.reload()" data-so="Isku Day Mar Kale" data-en="Retry">Isku Day Mar Kale</button>
   </div>
+  <script>
+    // Best-effort: match whichever language the app was last set to
+    // (mirrors the dhiil_lang cookie/localStorage key used by the app),
+    // so the offline page doesn't jar the user with a different language.
+    (function () {
+      try {
+        var lang =
+          localStorage.getItem("dhiil_lang") ||
+          (document.cookie.match(/(?:^|; )dhiil_lang=([^;]+)/) || [])[1] ||
+          "so";
+        if (lang !== "so" && lang !== "en") lang = "so";
+        document.documentElement.lang = lang;
+        document.querySelectorAll("[data-" + lang + "]").forEach(function (el) {
+          el.textContent = el.getAttribute("data-" + lang);
+        });
+      } catch (e) {
+        // localStorage/cookies unavailable — Somali default text stays as-is.
+      }
+    })();
+  </script>
 </body>
 </html>

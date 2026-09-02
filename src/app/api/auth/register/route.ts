@@ -7,12 +7,12 @@ import { registerSchema, parseOrThrow } from "@/lib/validation";
 
 export const POST = withErrorHandling(async (req: NextRequest) => {
   const body = await req.json().catch(() => null);
-  if (!body) throw new ApiException(400, "Invalid request body.");
+  if (!body) throw new ApiException(400, "Invalid request body.", "VALIDATION_ERROR");
   const data = parseOrThrow(registerSchema, body);
 
   const existing = await prisma.user.findUnique({ where: { email: data.email } });
   if (existing) {
-    throw new ApiException(409, "An account with this email already exists.");
+    throw new ApiException(409, "An account with this email already exists.", "EMAIL_TAKEN");
   }
 
   const passwordHash = await hashPassword(data.password);

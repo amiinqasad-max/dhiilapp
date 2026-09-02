@@ -79,7 +79,7 @@ export function parseOrThrow<T extends z.ZodTypeAny>(schema: T, data: unknown): 
   if (!result.success) {
     const first = result.error.issues[0];
     const message = first ? `${first.path.join(".") || "value"}: ${first.message}` : "Invalid input.";
-    throw new ApiException(400, message);
+    throw new ApiException(400, message, "VALIDATION_ERROR");
   }
   return result.data;
 }

@@ -84,15 +84,25 @@ export function toNotificationDTO(n: {
   type: string;
   title: string;
   message: string;
+  meta?: string | null;
   link: string | null;
   isRead: boolean;
   createdAt: Date;
 }): NotificationDTO {
+  let meta: Record<string, string> | null = null;
+  if (n.meta) {
+    try {
+      meta = JSON.parse(n.meta);
+    } catch {
+      meta = null;
+    }
+  }
   return {
     id: n.id,
     type: n.type as NotificationType,
     title: n.title,
     message: n.message,
+    meta,
     link: n.link,
     isRead: n.isRead,
     createdAt: n.createdAt.toISOString(),

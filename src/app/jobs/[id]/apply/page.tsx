@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { apiFetch, ApiClientError } from "@/lib/api-client";
+import { useTranslation } from "@/context/I18nContext";
+import { apiFetch, translateApiError } from "@/lib/api-client";
 import { Input, Textarea, Select } from "@/components/ui/Field";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { WhatsAppButton } from "@/components/marketplace/WhatsAppButton";
@@ -13,6 +14,7 @@ import type { JobDTO, ProfessionalProfileDTO } from "@/types";
 export default function ApplyPage() {
   const { id } = useParams<{ id: string }>();
   const { user, loading: authLoading } = useAuth();
+  const { t } = useTranslation();
   const router = useRouter();
 
   const [job, setJob] = useState<JobDTO | null>(null);
@@ -60,9 +62,9 @@ export default function ApplyPage() {
       );
       setApplicationId(data.application.id);
       setWaLink(data.whatsappLink);
-      toast("Application submitted.");
+      toast(t("jobs.applicationReadyTitle"));
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : "Failed to submit application.");
+      setError(translateApiError(err, t));
     } finally {
       setSaving(false);
     }
@@ -80,39 +82,37 @@ export default function ApplyPage() {
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-100 text-brand-700">
           ✓
         </div>
-        <h1 className="mt-4 text-2xl font-bold text-gray-900">Application Ready</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Your application was saved to DHIIL. Continue on WhatsApp to talk with the client directly.
-        </p>
+        <h1 className="mt-4 text-2xl font-bold text-gray-900">{t("jobs.applicationReadyTitle")}</h1>
+        <p className="mt-1 text-sm text-gray-500">{t("jobs.applicationReadyDesc")}</p>
         <div className="mt-6 space-y-3">
           <WhatsAppButton link={waLink} fullWidth size="lg" onOpen={handleContinueOnWhatsApp} />
           <LinkButton href="/dashboard" variant="outline" fullWidth size="lg">
-            Go to my applications
+            {t("jobs.goToMyApplications")}
           </LinkButton>
         </div>
       </div>
     );
   }
 
-  if (!job) return <div className="mx-auto max-w-lg px-4 py-6 text-sm text-gray-500">Loading…</div>;
+  if (!job) return <div className="mx-auto max-w-lg px-4 py-6 text-sm text-gray-500">{t("common.loading")}</div>;
 
   return (
     <div className="mx-auto max-w-lg px-4 py-6">
-      <h1 className="text-2xl font-bold text-gray-900">Apply to &ldquo;{job.title}&rdquo;</h1>
-      <p className="mt-1 text-sm text-gray-500">Fill in your proposal. You&apos;ll continue on WhatsApp after this.</p>
+      <h1 className="text-2xl font-bold text-gray-900">{t("jobs.applyToJobTitle", { title: job.title })}</h1>
+      <p className="mt-1 text-sm text-gray-500">{t("jobs.applySubtitle")}</p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <Textarea
-          label="Cover letter"
+          label={t("jobs.coverLetterLabel")}
           required
           minLength={20}
           value={coverLetter}
           onChange={(e) => setCoverLetter(e.target.value)}
-          placeholder="Introduce yourself and explain why you're a good fit…"
+          placeholder={t("jobs.coverLetterPlaceholder")}
         />
         <div className="grid grid-cols-2 gap-3">
           <Input
-            label="Proposed price (USD)"
+            label={t("jobs.proposedPriceLabel")}
             type="number"
             min={1}
             required
@@ -120,16 +120,16 @@ export default function ApplyPage() {
             onChange={(e) => setProposedPrice(e.target.value)}
           />
           <Input
-            label="Delivery time"
+            label={t("jobs.deliveryTimeLabel")}
             required
             value={deliveryTime}
             onChange={(e) => setDeliveryTime(e.target.value)}
-            placeholder="e.g. 5 days"
+            placeholder={t("jobs.deliveryTimePlaceholder")}
           />
         </div>
         {portfolio.length > 0 && (
-          <Select label="Portfolio (optional)" value={portfolioId} onChange={(e) => setPortfolioId(e.target.value)}>
-            <option value="">None</option>
+          <Select label={t("jobs.portfolioOptionalLabel")} value={portfolioId} onChange={(e) => setPortfolioId(e.target.value)}>
+            <option value="">{t("common.none")}</option>
             {portfolio.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.title}
@@ -139,7 +139,7 @@ export default function ApplyPage() {
         )}
         {error && <p className="text-sm text-red-600">{error}</p>}
         <Button type="submit" fullWidth size="lg" loading={saving}>
-          Submit application
+          {t("jobs.submitApplicationButton")}
         </Button>
       </form>
     </div>

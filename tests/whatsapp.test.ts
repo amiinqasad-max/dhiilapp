@@ -78,6 +78,29 @@ describe("WhatsAppTemplates", () => {
     expect(msg).not.toContain("Message Sent");
   });
 
+  it("application() renders localized scaffolding (Somali by default, English on request)", () => {
+    const params = {
+      jobTitle: "Design a logo",
+      category: "Design",
+      professionalName: "Amina",
+      skills: ["Illustrator"],
+      proposedPrice: 150,
+      deliveryTime: "3 days",
+      coverLetter: "I would love to help.",
+      applicationUrl: "https://dhiil.app/jobs/123",
+    };
+    const so = WhatsAppTemplates.application(params); // default locale = Somali
+    const en = WhatsAppTemplates.application(params, "en");
+    expect(so).toContain("CODSI SHAQO");
+    expect(en).toContain("JOB APPLICATION");
+    expect(so).not.toBe(en);
+    // Both still carry the untranslated user-generated content verbatim.
+    for (const msg of [so, en]) {
+      expect(msg).toContain("Design a logo");
+      expect(msg).toContain("I would love to help.");
+    }
+  });
+
   it("jobShare() includes budget, category, location, and job URL", () => {
     const msg = WhatsAppTemplates.jobShare({
       jobTitle: "Build a website",

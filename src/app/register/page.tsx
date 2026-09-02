@@ -5,14 +5,16 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
-import { apiFetch, ApiClientError } from "@/lib/api-client";
+import { apiFetch, translateApiError } from "@/lib/api-client";
 import { useAuth } from "@/context/AuthContext";
+import { useTranslation } from "@/context/I18nContext";
 import { toast } from "@/components/ui/Misc";
 import type { Role } from "@/types";
 
 export default function RegisterPage() {
   const router = useRouter();
   const { refresh } = useAuth();
+  const { t } = useTranslation();
   const [role, setRole] = useState<Role>("PROFESSIONAL");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -30,10 +32,10 @@ export default function RegisterPage() {
         body: JSON.stringify({ name, email, password, role }),
       });
       await refresh();
-      toast("Account created!");
+      toast(t("auth.accountCreated"));
       router.push(role === "CLIENT" ? "/jobs/new" : "/profile");
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : "Something went wrong.");
+      setError(translateApiError(err, t));
     } finally {
       setLoading(false);
     }
@@ -41,8 +43,8 @@ export default function RegisterPage() {
 
   return (
     <div className="mx-auto flex min-h-[80vh] w-full max-w-sm flex-col justify-center px-4 py-10">
-      <h1 className="text-2xl font-bold text-gray-900">Create your DHIIL account</h1>
-      <p className="mt-1 text-sm text-gray-500">Choose how you plan to use DHIIL.</p>
+      <h1 className="text-2xl font-bold text-gray-900">{t("auth.registerTitle")}</h1>
+      <p className="mt-1 text-sm text-gray-500">{t("auth.registerSubtitle")}</p>
 
       <div className="mt-5 grid grid-cols-2 gap-3">
         <button
@@ -52,7 +54,7 @@ export default function RegisterPage() {
             role === "PROFESSIONAL" ? "border-brand-600 bg-brand-50 text-brand-800" : "border-gray-200 text-gray-600"
           }`}
         >
-          I&apos;m a Professional
+          {t("auth.roleProfessional")}
         </button>
         <button
           type="button"
@@ -61,14 +63,14 @@ export default function RegisterPage() {
             role === "CLIENT" ? "border-brand-600 bg-brand-50 text-brand-800" : "border-gray-200 text-gray-600"
           }`}
         >
-          I&apos;m a Client
+          {t("auth.roleClient")}
         </button>
       </div>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        <Input label="Full name" required value={name} onChange={(e) => setName(e.target.value)} />
+        <Input label={t("common.fullName")} required value={name} onChange={(e) => setName(e.target.value)} />
         <Input
-          label="Email"
+          label={t("common.email")}
           type="email"
           required
           value={email}
@@ -76,25 +78,25 @@ export default function RegisterPage() {
           autoComplete="email"
         />
         <Input
-          label="Password"
+          label={t("common.password")}
           type="password"
           required
           minLength={8}
-          hint="At least 8 characters."
+          hint={t("auth.passwordHint")}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="new-password"
         />
         {error && <p className="text-sm text-red-600">{error}</p>}
         <Button type="submit" fullWidth size="lg" loading={loading}>
-          Create account
+          {t("auth.registerButton")}
         </Button>
       </form>
 
       <p className="mt-6 text-center text-sm text-gray-500">
-        Already have an account?{" "}
+        {t("auth.haveAccount")}{" "}
         <Link href="/login" className="font-medium text-brand-700">
-          Log in
+          {t("common.logIn")}
         </Link>
       </p>
     </div>

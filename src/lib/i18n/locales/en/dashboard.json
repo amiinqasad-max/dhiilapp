@@ -1,0 +1,13 @@
+{
+  "title": "Your dashboard",
+  "postJobButton": "+ Post a job",
+  "activeJobs": "Active jobs",
+  "closedJobs": "Closed jobs",
+  "completedJobs": "Completed",
+  "newApplicationsTile": "New applications",
+  "shortlistedTile": "Shortlisted",
+  "acceptedTile": "Accepted",
+  "pendingTile": "Pending",
+  "completedTile": "Completed",
+  "browseJobsButton": "Browse jobs"
+}

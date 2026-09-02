@@ -10,14 +10,14 @@ export const GET = withErrorHandling(async (_req: NextRequest, { params }: { par
     where: { id: params.id },
     include: { client: { select: { name: true } }, _count: { select: { applications: true } } },
   });
-  if (!job) throw new ApiException(404, "Job not found.");
+  if (!job) throw new ApiException(404, "Job not found.", "JOB_NOT_FOUND");
 
   // A non-OPEN job is visible only to its owner — public search/detail
   // pages should not surface closed/completed jobs to everyone.
   if (job.status !== "OPEN") {
     const current = await getCurrentUser();
     if (!current || current.id !== job.clientId) {
-      throw new ApiException(404, "Job not found.");
+      throw new ApiException(404, "Job not found.", "JOB_NOT_FOUND");
     }
   }
 
@@ -27,11 +27,11 @@ export const GET = withErrorHandling(async (_req: NextRequest, { params }: { par
 export const PATCH = withErrorHandling(async (req: NextRequest, { params }: { params: { id: string } }) => {
   const user = await requireRole("CLIENT");
   const job = await prisma.job.findUnique({ where: { id: params.id } });
-  if (!job) throw new ApiException(404, "Job not found.");
-  if (job.clientId !== user.id) throw new ApiException(403, "You can only edit your own jobs.");
+  if (!job) throw new ApiException(404, "Job not found.", "JOB_NOT_FOUND");
+  if (job.clientId !== user.id) throw new ApiException(403, "You can only edit your own jobs.", "JOB_NOT_OWNER");
 
   const body = await req.json().catch(() => null);
-  if (!body) throw new ApiException(400, "Invalid request body.");
+  if (!body) throw new ApiException(400, "Invalid request body.", "VALIDATION_ERROR");
   const data = parseOrThrow(jobUpdateSchema, body);
 
   const updated = await prisma.job.update({
@@ -68,8 +68,8 @@ export const PATCH = withErrorHandling(async (req: NextRequest, { params }: { pa
 export const DELETE = withErrorHandling(async (_req: NextRequest, { params }: { params: { id: string } }) => {
   const user = await requireRole("CLIENT");
   const job = await prisma.job.findUnique({ where: { id: params.id } });
-  if (!job) throw new ApiException(404, "Job not found.");
-  if (job.clientId !== user.id) throw new ApiException(403, "You can only delete your own jobs.");
+  if (!job) throw new ApiException(404, "Job not found.", "JOB_NOT_FOUND");
+  if (job.clientId !== user.id) throw new ApiException(403, "You can only delete your own jobs.", "JOB_NOT_OWNER");
 
   await prisma.job.delete({ where: { id: params.id } });
   return NextResponse.json({ ok: true });

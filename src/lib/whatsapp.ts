@@ -7,8 +7,16 @@
 // WhatsApp. It is never proof of delivery or reading — callers must use
 // wording like "Continue on WhatsApp" / "WhatsApp opened", never
 // "Message sent" or "Message delivered".
+//
+// Message SCAFFOLDING (labels, headers, greetings) is localized via the
+// same JSON dictionaries the UI uses — see src/lib/i18n. USER-GENERATED
+// CONTENT (job titles/descriptions, cover letters, bios) is never
+// translated and is inserted verbatim, per DHIIL's rule that only
+// interface text changes with language, never a user's own words.
 
 import { parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/config";
 
 export interface NormalizedPhone {
   e164: string; // e.g. "+252611234567"
@@ -72,96 +80,117 @@ function line(label: string, value: string | number | null | undefined): string 
 
 export const WhatsAppTemplates = {
   /** Professional -> Client, sent alongside a saved job application. */
-  application(params: {
-    jobTitle: string;
-    category: string;
-    professionalName: string;
-    skills: string[];
-    proposedPrice: number;
-    deliveryTime: string;
-    coverLetter: string;
-    portfolioUrl?: string | null;
-    applicationUrl: string;
-  }): string {
+  application(
+    params: {
+      jobTitle: string;
+      category: string;
+      professionalName: string;
+      skills: string[];
+      proposedPrice: number;
+      deliveryTime: string;
+      coverLetter: string;
+      portfolioUrl?: string | null;
+      applicationUrl: string;
+    },
+    locale: Locale = DEFAULT_LOCALE
+  ): string {
+    const t = getDictionary(locale);
     return (
-      `Hello, I found your job on DHIIL and I would like to apply.\n\n` +
-      `JOB APPLICATION — DHIIL\n\n` +
-      line("Job", params.jobTitle) +
-      line("Category", params.category) +
-      line("Professional", params.professionalName) +
-      line("Skills", params.skills.join(", ")) +
-      line("Proposed Price", params.proposedPrice) +
-      line("Delivery Time", params.deliveryTime) +
-      line("Cover Letter", params.coverLetter) +
-      (params.portfolioUrl ? line("Portfolio", params.portfolioUrl) : "") +
-      line("DHIIL Application", params.applicationUrl) +
-      `Thank you.`
+      `${t["whatsapp.applicationIntro"]}\n\n` +
+      `${t["whatsapp.applicationHeader"]}\n\n` +
+      line(t["whatsapp.labelJob"], params.jobTitle) +
+      line(t["whatsapp.labelCategory"], params.category) +
+      line(t["whatsapp.labelProfessional"], params.professionalName) +
+      line(t["whatsapp.labelSkills"], params.skills.join(", ")) +
+      line(t["whatsapp.labelProposedPrice"], params.proposedPrice) +
+      line(t["whatsapp.labelDeliveryTime"], params.deliveryTime) +
+      line(t["whatsapp.labelCoverLetter"], params.coverLetter) +
+      (params.portfolioUrl ? line(t["whatsapp.labelPortfolio"], params.portfolioUrl) : "") +
+      line(t["whatsapp.labelApplicationLink"], params.applicationUrl) +
+      t["whatsapp.thankYou"]
     ).trim();
   },
 
   /** Client sharing a newly published job to their own WhatsApp contacts. */
-  jobShare(params: {
-    jobTitle: string;
-    category: string;
-    budget: string;
-    location?: string | null;
-    shortDescription: string;
-    skills: string[];
-    jobUrl: string;
-  }): string {
+  jobShare(
+    params: {
+      jobTitle: string;
+      category: string;
+      budget: string;
+      location?: string | null;
+      shortDescription: string;
+      skills: string[];
+      jobUrl: string;
+    },
+    locale: Locale = DEFAULT_LOCALE
+  ): string {
+    const t = getDictionary(locale);
     return (
-      `DHIIL — NEW JOB\n\n` +
-      line("Job", params.jobTitle) +
-      line("Category", params.category) +
-      line("Budget", params.budget) +
-      (params.location ? line("Location", params.location) : "") +
-      line("Description", params.shortDescription) +
-      line("Skills", params.skills.join(", ")) +
-      line("View & Apply", params.jobUrl)
+      `${t["whatsapp.jobShareHeader"]}\n\n` +
+      line(t["whatsapp.labelJob"], params.jobTitle) +
+      line(t["whatsapp.labelCategory"], params.category) +
+      line(t["whatsapp.labelBudget"], params.budget) +
+      (params.location ? line(t["whatsapp.labelLocation"], params.location) : "") +
+      line(t["whatsapp.labelDescription"], params.shortDescription) +
+      line(t["whatsapp.labelSkills"], params.skills.join(", ")) +
+      line(t["whatsapp.labelViewApply"], params.jobUrl)
     ).trim();
   },
 
   /** Client -> Professional, contacting from a public profile. */
-  professionalContact(params: { professionalName: string; profileUrl: string }): string {
+  professionalContact(
+    params: { professionalName: string; profileUrl: string },
+    locale: Locale = DEFAULT_LOCALE
+  ): string {
+    const t = getDictionary(locale);
     return (
       `Hello ${params.professionalName},\n\n` +
-      `I found your profile on DHIIL and I am interested in your services. ` +
-      `I would like to discuss a potential project with you.\n\n` +
-      line("DHIIL Profile", params.profileUrl) +
-      `Thank you.`
+      `${t["whatsapp.professionalContactIntro"]}\n\n` +
+      line(t["whatsapp.labelDhiilProfile"], params.profileUrl) +
+      t["whatsapp.thankYou"]
     ).trim();
   },
 
   /** Professional -> Client, contacting about a specific job/application. */
-  clientContact(params: {
-    clientName: string;
-    jobTitle: string;
-    profileUrl: string;
-    applicationUrl?: string | null;
-  }): string {
+  clientContact(
+    params: {
+      clientName: string;
+      jobTitle: string;
+      profileUrl: string;
+      applicationUrl?: string | null;
+    },
+    locale: Locale = DEFAULT_LOCALE
+  ): string {
+    const t = getDictionary(locale);
     return (
       `Hello ${params.clientName},\n\n` +
-      `I found your job on DHIIL:\n${params.jobTitle}\n\n` +
-      `I am interested in discussing the project with you.\n\n` +
-      line("My DHIIL Profile", params.profileUrl) +
-      (params.applicationUrl ? line("Application", params.applicationUrl) : "") +
-      `Thank you.`
+      `${t["whatsapp.clientContactFoundJob"]}\n${params.jobTitle}\n\n` +
+      `${t["whatsapp.clientContactInterested"]}\n\n` +
+      line(t["whatsapp.labelMyProfile"], params.profileUrl) +
+      (params.applicationUrl ? line(t["whatsapp.labelApplication"], params.applicationUrl) : "") +
+      t["whatsapp.thankYou"]
     ).trim();
   },
 
   /** Optional follow-up: client accepted the professional's application. */
-  applicationAccepted(params: { professionalName: string; jobTitle: string }): string {
-    return (
-      `Hi ${params.professionalName}, great news — your application for ` +
-      `"${params.jobTitle}" has been accepted on DHIIL. Let's discuss next steps.`
-    );
+  applicationAccepted(
+    params: { professionalName: string; jobTitle: string },
+    locale: Locale = DEFAULT_LOCALE
+  ): string {
+    const t = getDictionary(locale);
+    return t["whatsapp.applicationAcceptedFollowUp"]
+      .replace("{name}", params.professionalName)
+      .replace("{job}", params.jobTitle);
   },
 
   /** Optional follow-up: client shortlisted the professional's application. */
-  applicationShortlisted(params: { professionalName: string; jobTitle: string }): string {
-    return (
-      `Hi ${params.professionalName}, your application for "${params.jobTitle}" ` +
-      `has been shortlisted on DHIIL.`
-    );
+  applicationShortlisted(
+    params: { professionalName: string; jobTitle: string },
+    locale: Locale = DEFAULT_LOCALE
+  ): string {
+    const t = getDictionary(locale);
+    return t["whatsapp.applicationShortlistedFollowUp"]
+      .replace("{name}", params.professionalName)
+      .replace("{job}", params.jobTitle);
   },
 };

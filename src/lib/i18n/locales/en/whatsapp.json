@@ -1,0 +1,38 @@
+{
+  "continueOnWhatsapp": "Continue on WhatsApp",
+  "shareOnWhatsapp": "Share on WhatsApp",
+  "contactOnWhatsapp": "Contact on WhatsApp",
+  "contactClientOnWhatsapp": "Contact Client on WhatsApp",
+  "whatsappNotAvailable": "WhatsApp not available",
+  "whatsappOpened": "WhatsApp opened",
+
+  "applicationIntro": "Hello, I found your job on DHIIL and I would like to apply.",
+  "applicationHeader": "JOB APPLICATION — DHIIL",
+  "labelJob": "Job",
+  "labelCategory": "Category",
+  "labelProfessional": "Professional",
+  "labelSkills": "Skills",
+  "labelProposedPrice": "Proposed Price",
+  "labelDeliveryTime": "Delivery Time",
+  "labelCoverLetter": "Cover Letter",
+  "labelPortfolio": "Portfolio",
+  "labelApplicationLink": "DHIIL Application",
+  "thankYou": "Thank you.",
+
+  "jobShareHeader": "DHIIL — NEW JOB",
+  "labelBudget": "Budget",
+  "labelLocation": "Location",
+  "labelDescription": "Description",
+  "labelViewApply": "View & Apply",
+
+  "professionalContactIntro": "I found your profile on DHIIL and I am interested in your services. I would like to discuss a potential project with you.",
+  "labelDhiilProfile": "DHIIL Profile",
+
+  "clientContactFoundJob": "I found your job on DHIIL:",
+  "clientContactInterested": "I am interested in discussing the project with you.",
+  "labelMyProfile": "My DHIIL Profile",
+  "labelApplication": "Application",
+
+  "applicationAcceptedFollowUp": "Hi {name}, great news — your application for \"{job}\" has been accepted on DHIIL. Let's discuss next steps.",
+  "applicationShortlistedFollowUp": "Hi {name}, your application for \"{job}\" has been shortlisted on DHIIL."
+}

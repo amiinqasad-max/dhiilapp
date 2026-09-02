@@ -1,0 +1,38 @@
+{
+  "continueOnWhatsapp": "Ku Sii Wad WhatsApp",
+  "shareOnWhatsapp": "WhatsApp Ku Qaybi",
+  "contactOnWhatsapp": "WhatsApp Kala Xiriir",
+  "contactClientOnWhatsapp": "Macmiilka WhatsApp Kala Xiriir",
+  "whatsappNotAvailable": "WhatsApp Lama Heli Karo",
+  "whatsappOpened": "WhatsApp waa la furay",
+
+  "applicationIntro": "Salaan, waxaan ka helay shaqadaada DHIIL waxaanan rabaa inaan codsado.",
+  "applicationHeader": "CODSI SHAQO — DHIIL",
+  "labelJob": "Shaqo",
+  "labelCategory": "Qaybta",
+  "labelProfessional": "Xirfadle",
+  "labelSkills": "Xirfadaha",
+  "labelProposedPrice": "Qiimaha Soo Jeedinta",
+  "labelDeliveryTime": "Wakhtiga Dhammaystirka",
+  "labelCoverLetter": "Warqadda Isbandhigga",
+  "labelPortfolio": "Shaqooyinkii Hore",
+  "labelApplicationLink": "Codsiga DHIIL",
+  "thankYou": "Mahadsanid.",
+
+  "jobShareHeader": "DHIIL — SHAQO CUSUB",
+  "labelBudget": "Miisaaniyadda",
+  "labelLocation": "Goobta",
+  "labelDescription": "Faahfaahin",
+  "labelViewApply": "Fiiri oo Codso",
+
+  "professionalContactIntro": "Xogtaadan waxaan ka helay DHIIL waxaanan xiiseynayaa adeegyadaada. Waxaan rabaa inaan kula hadlo mashruuc suurtogal ah.",
+  "labelDhiilProfile": "Xogta DHIIL",
+
+  "clientContactFoundJob": "Waxaan ka helay shaqadaada DHIIL:",
+  "clientContactInterested": "Waxaan xiiseynayaa inaan kula hadlo mashruuca.",
+  "labelMyProfile": "Xogtayda DHIIL",
+  "labelApplication": "Codsiga",
+
+  "applicationAcceptedFollowUp": "Salaam {name}, war wanaagsan — codsigaaga \"{job}\" waa la aqbalay DHIIL. Aan ka wada hadalno tallaabooyinka soo socda.",
+  "applicationShortlistedFollowUp": "Salaam {name}, codsigaaga \"{job}\" waxaa lagu daray liiska gaaban ee DHIIL."
+}

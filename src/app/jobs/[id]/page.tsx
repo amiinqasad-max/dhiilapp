@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { apiFetch, ApiClientError } from "@/lib/api-client";
+import { apiFetch, translateApiError } from "@/lib/api-client";
 import { useAuth } from "@/context/AuthContext";
+import { useTranslation } from "@/context/I18nContext";
+import { formatCurrency, formatDate } from "@/lib/i18n/format";
 import { StatusBadge, Skeleton, ErrorState, toast } from "@/components/ui/Misc";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { WhatsAppButton } from "@/components/marketplace/WhatsAppButton";
@@ -12,6 +14,7 @@ import type { JobDTO } from "@/types";
 export default function JobDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { t, locale } = useTranslation();
   const [job, setJob] = useState<JobDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [waShareLink, setWaShareLink] = useState<string | null>(null);
@@ -23,7 +26,7 @@ export default function JobDetailPage() {
       const data = await apiFetch<{ job: JobDTO }>(`/api/jobs/${id}`);
       setJob(data.job);
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : "Failed to load job.");
+      setError(translateApiError(err, t));
     }
   }
 
@@ -53,10 +56,10 @@ export default function JobDetailPage() {
     setUpdatingStatus(true);
     try {
       await apiFetch(`/api/jobs/${job.id}`, { method: "PATCH", body: JSON.stringify({ status: "CLOSED" }) });
-      toast("Job closed.");
+      toast(t("applications.updated", { status: t("jobs.statusClosed") }));
       load();
     } catch (err) {
-      toast(err instanceof ApiClientError ? err.message : "Failed to update job.", "error");
+      toast(translateApiError(err, t), "error");
     } finally {
       setUpdatingStatus(false);
     }
@@ -79,46 +82,46 @@ export default function JobDetailPage() {
         <StatusBadge status={job.status} />
       </div>
       <p className="mt-1 text-sm text-gray-500">
-        Posted by {job.clientName} · {new Date(job.createdAt).toLocaleDateString()}
+        {t("jobs.postedBy", { name: job.clientName, date: formatDate(job.createdAt, locale) })}
       </p>
 
       <div className="mt-4 flex flex-wrap gap-4 rounded-2xl border border-gray-200 bg-white p-4 text-sm">
         <div>
-          <p className="text-xs text-gray-500">Budget</p>
+          <p className="text-xs text-gray-500">{t("common.budget")}</p>
           <p className="font-semibold text-brand-700">
-            ${job.budget.toLocaleString()} {job.budgetType === "HOURLY" ? "/ hr" : ""}
+            {formatCurrency(job.budget, locale)} {job.budgetType === "HOURLY" ? t("jobs.budgetHourlySuffix") : ""}
           </p>
         </div>
         <div>
-          <p className="text-xs text-gray-500">Category</p>
+          <p className="text-xs text-gray-500">{t("common.category")}</p>
           <p className="font-medium text-gray-900">{job.category}</p>
         </div>
         {job.location && (
           <div>
-            <p className="text-xs text-gray-500">Location</p>
+            <p className="text-xs text-gray-500">{t("common.location")}</p>
             <p className="font-medium text-gray-900">{job.location}</p>
           </div>
         )}
         {job.deadline && (
           <div>
-            <p className="text-xs text-gray-500">Deadline</p>
-            <p className="font-medium text-gray-900">{new Date(job.deadline).toLocaleDateString()}</p>
+            <p className="text-xs text-gray-500">{t("common.deadline")}</p>
+            <p className="font-medium text-gray-900">{formatDate(job.deadline, locale)}</p>
           </div>
         )}
         <div>
-          <p className="text-xs text-gray-500">Applicants</p>
+          <p className="text-xs text-gray-500">{t("jobs.applicantsLabel")}</p>
           <p className="font-medium text-gray-900">{job.applicationCount}</p>
         </div>
       </div>
 
       <section className="mt-6">
-        <h2 className="text-sm font-semibold text-gray-900">Description</h2>
+        <h2 className="text-sm font-semibold text-gray-900">{t("jobs.descriptionHeading")}</h2>
         <p className="mt-1 whitespace-pre-line text-sm text-gray-600">{job.description}</p>
       </section>
 
       {job.skills.length > 0 && (
         <section className="mt-6">
-          <h2 className="text-sm font-semibold text-gray-900">Skills</h2>
+          <h2 className="text-sm font-semibold text-gray-900">{t("jobs.skillsHeading")}</h2>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {job.skills.map((s) => (
               <span key={s} className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-700">
@@ -133,33 +136,33 @@ export default function JobDetailPage() {
         <div className="mx-auto max-w-3xl">
           {isOwner ? (
             <div className="flex flex-col gap-2 sm:flex-row">
-              <WhatsAppButton link={waShareLink} label="Share on WhatsApp" fullWidth />
+              <WhatsAppButton link={waShareLink} label={t("whatsapp.shareOnWhatsapp")} fullWidth />
               <LinkButton href={`/jobs/${job.id}/applications`} variant="outline" fullWidth>
-                View applications ({job.applicationCount})
+                {t("jobs.viewApplicationsButton", { count: job.applicationCount })}
               </LinkButton>
               {job.status === "OPEN" && (
                 <Button variant="ghost" onClick={closeJob} loading={updatingStatus}>
-                  Close job
+                  {t("jobs.closeJobButton")}
                 </Button>
               )}
             </div>
           ) : user?.role === "PROFESSIONAL" ? (
             hasApplied ? (
               <Button fullWidth size="lg" disabled>
-                Applied
+                {t("jobs.applied")}
               </Button>
             ) : job.status === "OPEN" ? (
               <LinkButton href={`/jobs/${job.id}/apply`} fullWidth size="lg">
-                Apply Now
+                {t("jobs.applyNow")}
               </LinkButton>
             ) : (
               <Button fullWidth size="lg" disabled>
-                Job closed
+                {t("jobs.jobClosed")}
               </Button>
             )
           ) : !user ? (
             <LinkButton href={`/login?next=/jobs/${job.id}`} fullWidth size="lg">
-              Log in to apply
+              {t("jobs.loginToApply")}
             </LinkButton>
           ) : null}
         </div>

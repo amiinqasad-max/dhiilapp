@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { useTranslation } from "@/context/I18nContext";
 
 const DISMISS_KEY = "dhiil_install_dismissed_at";
 const DISMISS_COOLDOWN_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
@@ -18,6 +19,7 @@ interface BeforeInstallPromptEvent extends Event {
  * native install mechanism — we never fabricate our own APK/IPA flow.
  */
 export function InstallPrompt() {
+  const { t } = useTranslation();
   const [deferredEvent, setDeferredEvent] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -48,16 +50,14 @@ export function InstallPrompt() {
 
   return (
     <div className="fixed inset-x-3 z-40 mx-auto max-w-sm rounded-2xl border border-gray-200 bg-white p-4 shadow-lg safe-bottom" style={{ bottom: "calc(var(--bottom-nav-height) + 12px)" }}>
-      <p className="text-sm font-semibold text-gray-900">Install DHIIL</p>
-      <p className="mt-1 text-xs text-gray-500">
-        Add DHIIL to your home screen for a faster, app-like experience.
-      </p>
+      <p className="text-sm font-semibold text-gray-900">{t("pwa.installTitle")}</p>
+      <p className="mt-1 text-xs text-gray-500">{t("pwa.installDesc")}</p>
       <div className="mt-3 flex gap-2">
         <Button size="sm" onClick={install}>
-          Install
+          {t("pwa.installButton")}
         </Button>
         <Button size="sm" variant="ghost" onClick={dismiss}>
-          Not now
+          {t("pwa.notNowButton")}
         </Button>
       </div>
     </div>

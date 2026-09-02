@@ -1,0 +1,18 @@
+{
+  "title": "Activity",
+  "subtitle": "Updates on your jobs and applications.",
+  "emptyTitle": "No activity yet",
+  "emptyDesc": "You'll see updates here as things happen on DHIIL.",
+  "newApplicationTitle": "New application received",
+  "newApplicationMessage": "{name} applied to \"{job}\".",
+  "shortlistedTitle": "You've been shortlisted",
+  "shortlistedMessage": "Your application for \"{job}\" has been shortlisted.",
+  "acceptedTitle": "Application accepted",
+  "acceptedMessage": "Your application for \"{job}\" has been accepted.",
+  "rejectedTitle": "Application update",
+  "rejectedMessage": "Your application for \"{job}\" was not selected this time.",
+  "withdrawnTitle": "Application withdrawn",
+  "withdrawnMessage": "{name} withdrew their application for \"{job}\".",
+  "jobStatusChangedTitle": "Job status updated",
+  "jobStatusChangedMessage": "\"{job}\" is now {status}."
+}

@@ -3,19 +3,23 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { useTranslation } from "@/context/I18nContext";
 import { Button } from "@/components/ui/Button";
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 
 export function Navbar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
 
   if (pathname?.startsWith("/login") || pathname?.startsWith("/register")) return null;
 
   const links = [
-    { href: "/jobs", label: "Find Jobs" },
-    { href: "/professionals", label: "Find Professionals" },
-    ...(user?.role === "CLIENT" ? [{ href: "/jobs/new", label: "Post a Job" }] : []),
-    ...(user ? [{ href: "/dashboard", label: "Dashboard" }] : []),
+    { href: "/jobs", label: t("nav.findJobs") },
+    { href: "/professionals", label: t("nav.findProfessionals") },
+    ...(user?.role === "CLIENT" ? [{ href: "/jobs/new", label: t("nav.postJob") }] : []),
+    ...(user ? [{ href: "/dashboard", label: t("nav.dashboard") }] : []),
+    ...(user?.role === "ADMIN" ? [{ href: "/admin", label: t("nav.admin") }] : []),
   ];
 
   return (
@@ -23,7 +27,7 @@ export function Navbar() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <Link href="/" className="flex items-center gap-2 text-xl font-extrabold tracking-tight text-brand-700">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white">D</span>
-          DHIIL
+          {t("common.appName")}
         </Link>
         <nav className="flex items-center gap-6 text-sm font-medium text-gray-600">
           {links.map((l) => (
@@ -36,25 +40,26 @@ export function Navbar() {
           {user ? (
             <>
               <Link href="/activity" className="text-sm font-medium text-gray-600 hover:text-brand-700">
-                Activity
+                {t("nav.activity")}
               </Link>
               <Link href="/profile" className="text-sm font-medium text-gray-600 hover:text-brand-700">
                 {user.name}
               </Link>
               <Button variant="outline" size="sm" onClick={() => logout()}>
-                Log out
+                {t("common.logOut")}
               </Button>
             </>
           ) : (
             <>
               <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-brand-700">
-                Log in
+                {t("common.logIn")}
               </Link>
               <Link href="/register">
-                <Button size="sm">Sign up</Button>
+                <Button size="sm">{t("common.signUp")}</Button>
               </Link>
             </>
           )}
+          <LanguageSwitcher />
         </div>
       </div>
     </header>

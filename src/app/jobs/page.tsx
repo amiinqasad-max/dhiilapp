@@ -2,10 +2,11 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { apiFetch, ApiClientError } from "@/lib/api-client";
+import { apiFetch, translateApiError } from "@/lib/api-client";
 import { JobCard } from "@/components/marketplace/JobCard";
 import { CardSkeleton, EmptyState, ErrorState } from "@/components/ui/Misc";
 import { Input, Select } from "@/components/ui/Field";
+import { useTranslation } from "@/context/I18nContext";
 import type { JobDTO } from "@/types";
 
 export default function JobsPage() {
@@ -17,6 +18,7 @@ export default function JobsPage() {
 }
 
 function JobsList() {
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const [q, setQ] = useState(searchParams.get("q") || "");
   const [category, setCategory] = useState("");
@@ -34,7 +36,7 @@ function JobsList() {
       const data = await apiFetch<{ jobs: JobDTO[] }>(`/api/jobs?${params.toString()}`);
       setJobs(data.jobs);
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : "Failed to load jobs.");
+      setError(translateApiError(err, t));
     }
   }
 
@@ -47,8 +49,8 @@ function JobsList() {
     <div className="mx-auto max-w-5xl px-4 py-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Find Jobs</h1>
-          <p className="mt-1 text-sm text-gray-500">Browse open jobs from clients on DHIIL.</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t("jobs.findJobsTitle")}</h1>
+          <p className="mt-1 text-sm text-gray-500">{t("jobs.findJobsSubtitle")}</p>
         </div>
       </div>
 
@@ -60,18 +62,18 @@ function JobsList() {
         }}
         className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_180px_140px_auto]"
       >
-        <Input placeholder="Search jobs…" value={q} onChange={(e) => setQ(e.target.value)} />
-        <Input placeholder="Category" value={category} onChange={(e) => setCategory(e.target.value)} />
+        <Input placeholder={t("jobs.searchPlaceholder")} value={q} onChange={(e) => setQ(e.target.value)} />
+        <Input placeholder={t("jobs.categoryPlaceholder")} value={category} onChange={(e) => setCategory(e.target.value)} />
         <Select value={sort} onChange={(e) => setSort(e.target.value)}>
-          <option value="newest">Newest</option>
-          <option value="budget_high">Budget: High to low</option>
-          <option value="budget_low">Budget: Low to high</option>
+          <option value="newest">{t("jobs.sortNewest")}</option>
+          <option value="budget_high">{t("jobs.sortBudgetHigh")}</option>
+          <option value="budget_low">{t("jobs.sortBudgetLow")}</option>
         </Select>
         <button
           type="submit"
           className="tap-target rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
         >
-          Search
+          {t("jobs.searchButton")}
         </button>
       </form>
 
@@ -84,7 +86,7 @@ function JobsList() {
         )}
         {jobs && jobs.length === 0 && (
           <div className="sm:col-span-2">
-            <EmptyState title="No jobs found" description="Try adjusting your search or check back later." />
+            <EmptyState title={t("jobs.emptyTitle")} description={t("jobs.emptyDesc")} />
           </div>
         )}
         {jobs?.map((job) => <JobCard key={job.id} job={job} />)}

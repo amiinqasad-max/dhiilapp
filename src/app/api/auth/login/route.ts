@@ -7,16 +7,16 @@ import { loginSchema, parseOrThrow } from "@/lib/validation";
 
 export const POST = withErrorHandling(async (req: NextRequest) => {
   const body = await req.json().catch(() => null);
-  if (!body) throw new ApiException(400, "Invalid request body.");
+  if (!body) throw new ApiException(400, "Invalid request body.", "VALIDATION_ERROR");
   const data = parseOrThrow(loginSchema, body);
 
   const user = await prisma.user.findUnique({ where: { email: data.email } });
   // Deliberately generic message — do not reveal whether the email exists.
   const genericError = "Invalid email or password.";
-  if (!user || !user.isActive) throw new ApiException(401, genericError);
+  if (!user || !user.isActive) throw new ApiException(401, genericError, "INVALID_CREDENTIALS");
 
   const valid = await verifyPassword(data.password, user.passwordHash);
-  if (!valid) throw new ApiException(401, genericError);
+  if (!valid) throw new ApiException(401, genericError, "INVALID_CREDENTIALS");
 
   const token = signSessionToken({ sub: user.id, role: user.role });
   cookies().set(AUTH_COOKIE_NAME, token, {

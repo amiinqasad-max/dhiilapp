@@ -1,8 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import { StatusBadge } from "@/components/ui/Misc";
+import { useTranslation } from "@/context/I18nContext";
+import { formatCurrency } from "@/lib/i18n/format";
 import type { JobDTO } from "@/types";
 
 export function JobCard({ job }: { job: JobDTO }) {
+  const { t, locale } = useTranslation();
   return (
     <Link
       href={`/jobs/${job.id}`}
@@ -15,11 +20,11 @@ export function JobCard({ job }: { job: JobDTO }) {
       <p className="mt-1 line-clamp-2 text-sm text-gray-500">{job.description}</p>
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
         <span className="font-semibold text-brand-700">
-          ${job.budget.toLocaleString()} {job.budgetType === "HOURLY" ? "/ hr" : ""}
+          {formatCurrency(job.budget, locale)} {job.budgetType === "HOURLY" ? t("jobs.budgetHourlySuffix") : ""}
         </span>
         <span>{job.category}</span>
         {job.location && <span>{job.location}</span>}
-        <span>{job.applicationCount} applicant{job.applicationCount === 1 ? "" : "s"}</span>
+        <span>{t("jobs.applicantsCount", { count: job.applicationCount })}</span>
       </div>
       {job.skills.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">

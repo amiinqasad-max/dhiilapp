@@ -12,7 +12,7 @@ const updateSchema = z.object({
 export const PATCH = withErrorHandling(async (req: NextRequest, { params }: { params: { id: string } }) => {
   await requireRole("ADMIN");
   const body = await req.json().catch(() => null);
-  if (!body) throw new ApiException(400, "Invalid request body.");
+  if (!body) throw new ApiException(400, "Invalid request body.", "VALIDATION_ERROR");
   const data = parseOrThrow(updateSchema, body);
 
   const verification = await prisma.verification.update({

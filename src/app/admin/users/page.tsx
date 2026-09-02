@@ -4,20 +4,29 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { apiFetch, ApiClientError } from "@/lib/api-client";
+import { useTranslation } from "@/context/I18nContext";
+import { apiFetch, translateApiError } from "@/lib/api-client";
 import { Skeleton, ErrorState, toast } from "@/components/ui/Misc";
 import { Button } from "@/components/ui/Button";
+import type { Role } from "@/types";
 
 interface AdminUser {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: Role;
   isActive: boolean;
 }
 
+const roleKey: Record<Role, string> = {
+  CLIENT: "admin.roleClient",
+  PROFESSIONAL: "admin.roleProfessional",
+  ADMIN: "admin.roleAdmin",
+};
+
 export default function AdminUsersPage() {
   const { user, loading } = useAuth();
+  const { t } = useTranslation();
   const router = useRouter();
   const [users, setUsers] = useState<AdminUser[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +37,7 @@ export default function AdminUsersPage() {
       const data = await apiFetch<{ users: AdminUser[] }>("/api/admin/users");
       setUsers(data.users);
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : "Failed to load users.");
+      setError(translateApiError(err, t));
     }
   }
 
@@ -44,10 +53,10 @@ export default function AdminUsersPage() {
     setBusyId(u.id);
     try {
       await apiFetch(`/api/admin/users/${u.id}`, { method: "PATCH", body: JSON.stringify({ isActive: !u.isActive }) });
-      toast(u.isActive ? "User suspended." : "User reactivated.");
+      toast(u.isActive ? t("admin.userSuspended") : t("admin.userReactivated"));
       load();
     } catch (err) {
-      toast(err instanceof ApiClientError ? err.message : "Failed to update user.", "error");
+      toast(translateApiError(err, t), "error");
     } finally {
       setBusyId(null);
     }
@@ -55,8 +64,8 @@ export default function AdminUsersPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6">
-      <Link href="/admin" className="text-sm text-brand-700">← Admin</Link>
-      <h1 className="mt-2 text-2xl font-bold text-gray-900">Users</h1>
+      <Link href="/admin" className="text-sm text-brand-700">{t("admin.backToAdmin")}</Link>
+      <h1 className="mt-2 text-2xl font-bold text-gray-900">{t("admin.usersTitle")}</h1>
 
       {error && <div className="mt-4"><ErrorState message={error} onRetry={load} /></div>}
 
@@ -64,10 +73,10 @@ export default function AdminUsersPage() {
         <table className="w-full min-w-[560px] text-sm">
           <thead className="border-b border-gray-200 text-left text-xs uppercase text-gray-500">
             <tr>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Email</th>
-              <th className="px-4 py-3">Role</th>
-              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">{t("admin.colName")}</th>
+              <th className="px-4 py-3">{t("admin.colEmail")}</th>
+              <th className="px-4 py-3">{t("admin.colRole")}</th>
+              <th className="px-4 py-3">{t("admin.colStatus")}</th>
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
@@ -82,15 +91,15 @@ export default function AdminUsersPage() {
               <tr key={u.id} className="border-b border-gray-100 last:border-0">
                 <td className="px-4 py-3 font-medium text-gray-900">{u.name}</td>
                 <td className="px-4 py-3 text-gray-600">{u.email}</td>
-                <td className="px-4 py-3 text-gray-600">{u.role}</td>
+                <td className="px-4 py-3 text-gray-600">{t(roleKey[u.role])}</td>
                 <td className="px-4 py-3">
                   <span className={u.isActive ? "text-brand-700" : "text-red-600"}>
-                    {u.isActive ? "Active" : "Suspended"}
+                    {u.isActive ? t("admin.statusActive") : t("admin.statusSuspended")}
                   </span>
                 </td>
                 <td className="px-4 py-3">
                   <Button size="sm" variant="outline" loading={busyId === u.id} onClick={() => toggleActive(u)}>
-                    {u.isActive ? "Suspend" : "Reactivate"}
+                    {u.isActive ? t("admin.suspendButton") : t("admin.reactivateButton")}
                   </Button>
                 </td>
               </tr>

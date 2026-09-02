@@ -28,7 +28,7 @@ export const GET = withErrorHandling(async (req: NextRequest) => {
     // a client id supplied by the request.
     const current = await getCurrentUser();
     if (!current || current.role !== "CLIENT") {
-      throw new ApiException(401, "Log in as a client to view your jobs.");
+      throw new ApiException(401, "Log in as a client to view your jobs.", "UNAUTHENTICATED");
     }
     where.clientId = current.id;
   }
@@ -77,7 +77,7 @@ export const GET = withErrorHandling(async (req: NextRequest) => {
 export const POST = withErrorHandling(async (req: NextRequest) => {
   const user = await requireRole("CLIENT");
   const body = await req.json().catch(() => null);
-  if (!body) throw new ApiException(400, "Invalid request body.");
+  if (!body) throw new ApiException(400, "Invalid request body.", "VALIDATION_ERROR");
   const data = parseOrThrow(jobCreateSchema, body);
 
   const job = await prisma.job.create({

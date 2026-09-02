@@ -1,0 +1,9 @@
+{
+  "installTitle": "Install DHIIL",
+  "installDesc": "Add DHIIL to your home screen for a faster, app-like experience.",
+  "installButton": "Install",
+  "notNowButton": "Not now",
+  "offlineTitle": "You're offline",
+  "offlineDesc": "DHIIL couldn't reach the network. Some previously visited pages may still be available — check your connection and try again.",
+  "offlineRetry": "Retry"
+}

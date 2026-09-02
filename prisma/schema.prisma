@@ -167,8 +167,9 @@ model Notification {
   userId  String
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   type    String // NotificationType
-  title   String
-  message String
+  title   String // English audit-trail copy; UI renders localized copy from type+meta instead.
+  message String // English audit-trail copy; UI renders localized copy from type+meta instead.
+  meta    String? // JSON-encoded {jobTitle, professionalName, status, ...} for locale-aware rendering
   link    String?
   isRead  Boolean @default(false)
 

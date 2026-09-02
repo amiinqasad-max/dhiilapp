@@ -1,0 +1,18 @@
+{
+  "title": "Dhaqdhaqaaqa",
+  "subtitle": "Cusboonaysiinta shaqooyinkaaga iyo codsiyadaada.",
+  "emptyTitle": "Wali dhaqdhaqaaq ma jiro",
+  "emptyDesc": "Halkan ayaad ka arki doontaa cusboonaysiinta marka ay wax ka dhacaan DHIIL.",
+  "newApplicationTitle": "Codsi Cusub Ayaa La Helay",
+  "newApplicationMessage": "{name} ayaa codsaday \"{job}\".",
+  "shortlistedTitle": "Waxaa lagu daray liiska gaaban",
+  "shortlistedMessage": "Codsigaaga \"{job}\" ayaa lagu daray liiska gaaban.",
+  "acceptedTitle": "Codsiga waa la aqbalay",
+  "acceptedMessage": "Codsigaaga \"{job}\" waa la aqbalay.",
+  "rejectedTitle": "Cusboonaysiin Codsi",
+  "rejectedMessage": "Codsigaaga \"{job}\" wakhtigan lama dooran.",
+  "withdrawnTitle": "Codsiga waa la soo celiyay",
+  "withdrawnMessage": "{name} wuu ka noqday codsigiisii \"{job}\".",
+  "jobStatusChangedTitle": "Xaaladda Shaqada waa la Cusboonaysiiyay",
+  "jobStatusChangedMessage": "\"{job}\" hadda waa {status}."
+}

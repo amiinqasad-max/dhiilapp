@@ -1,16 +1,19 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { useTranslation } from "@/context/I18nContext";
 
 /**
  * Renders a WhatsApp CTA that opens wa.me with a pre-filled message. Only
  * ever appears when `link` is non-null (i.e. the recipient has a valid,
  * normalized WhatsApp-capable number) — callers must not fabricate a link.
  * Wording is always "Continue on WhatsApp" style, never "message sent".
+ * Defaults to the localized "Continue on WhatsApp" label; pass `label`
+ * (translated at the call site) for the Share/Contact variants.
  */
 export function WhatsAppButton({
   link,
-  label = "Continue on WhatsApp",
+  label,
   fullWidth,
   size = "md",
   onOpen,
@@ -21,10 +24,13 @@ export function WhatsAppButton({
   size?: "sm" | "md" | "lg";
   onOpen?: () => void;
 }) {
+  const { t } = useTranslation();
+  const resolvedLabel = label ?? t("whatsapp.continueOnWhatsapp");
+
   if (!link) {
     return (
       <Button variant="outline" size={size} fullWidth={fullWidth} disabled>
-        WhatsApp not available
+        {t("whatsapp.whatsappNotAvailable")}
       </Button>
     );
   }
@@ -39,7 +45,7 @@ export function WhatsAppButton({
     >
       <Button variant="whatsapp" size={size} fullWidth={fullWidth} type="button">
         <WhatsAppIcon />
-        {label}
+        {resolvedLabel}
       </Button>
     </a>
   );

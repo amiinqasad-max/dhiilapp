@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ApiException, requireRole, withErrorHandling } from "@/lib/api-utils";
 import { generateWhatsAppLink, WhatsAppTemplates } from "@/lib/whatsapp";
+import { getServerLocale } from "@/lib/i18n/server";
 
 // Professional -> Client contact link about a specific job. Requires the
 // professional to have an existing application on this job — DHIIL does
@@ -11,13 +12,13 @@ export const GET = withErrorHandling(async (_req: Request, { params }: { params:
   const user = await requireRole("PROFESSIONAL");
 
   const job = await prisma.job.findUnique({ where: { id: params.id }, include: { client: true } });
-  if (!job) throw new ApiException(404, "Job not found.");
+  if (!job) throw new ApiException(404, "Job not found.", "JOB_NOT_FOUND");
 
   const application = await prisma.application.findUnique({
     where: { jobId_professionalId: { jobId: job.id, professionalId: user.id } },
   });
   if (!application) {
-    throw new ApiException(403, "Apply to this job before contacting the client on WhatsApp.");
+    throw new ApiException(403, "Apply to this job before contacting the client on WhatsApp.", "MUST_APPLY_FIRST");
   }
 
   if (!job.client.isWhatsapp) {
@@ -25,12 +26,15 @@ export const GET = withErrorHandling(async (_req: Request, { params }: { params:
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
-  const message = WhatsAppTemplates.clientContact({
-    clientName: job.client.name,
-    jobTitle: job.title,
-    profileUrl: `${appUrl}/professionals/${user.id}`,
-    applicationUrl: `${appUrl}/jobs/${job.id}`,
-  });
+  const message = WhatsAppTemplates.clientContact(
+    {
+      clientName: job.client.name,
+      jobTitle: job.title,
+      profileUrl: `${appUrl}/professionals/${user.id}`,
+      applicationUrl: `${appUrl}/jobs/${job.id}`,
+    },
+    getServerLocale()
+  );
 
   const link = generateWhatsAppLink(job.client.phoneNumber, job.client.phoneCountry, message);
   return NextResponse.json({ link });

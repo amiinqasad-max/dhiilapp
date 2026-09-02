@@ -29,5 +29,5 @@ export const GET = withErrorHandling(async (req: NextRequest) => {
     return NextResponse.json({ applications: applications.map(toApplicationDTO) });
   }
 
-  throw new ApiException(403, "You do not have permission to view applications.");
+  throw new ApiException(403, "You do not have permission to view applications.", "FORBIDDEN");
 });

@@ -20,7 +20,7 @@ export const GET = withErrorHandling(async () => {
       portfolio: true,
     },
   });
-  if (!profile) throw new ApiException(404, "Profile not found.");
+  if (!profile) throw new ApiException(404, "Profile not found.", "PROFILE_NOT_FOUND");
 
   return NextResponse.json({ profile: toProfessionalProfileDTO(profile) });
 });
@@ -28,7 +28,7 @@ export const GET = withErrorHandling(async () => {
 export const PATCH = withErrorHandling(async (req: NextRequest) => {
   const user = await requireUser();
   const body = await req.json().catch(() => null);
-  if (!body) throw new ApiException(400, "Invalid request body.");
+  if (!body) throw new ApiException(400, "Invalid request body.", "VALIDATION_ERROR");
   const data = parseOrThrow(profileUpdateSchema, body);
 
   // Fields that live on User apply to every role.
@@ -47,7 +47,7 @@ export const PATCH = withErrorHandling(async (req: NextRequest) => {
   }
 
   const profile = await prisma.professionalProfile.findUnique({ where: { userId: user.id } });
-  if (!profile) throw new ApiException(404, "Profile not found.");
+  if (!profile) throw new ApiException(404, "Profile not found.", "PROFILE_NOT_FOUND");
 
   if (data.skills) {
     // Upsert skills by name, then re-link exactly this set to the profile.

@@ -5,8 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
-import { apiFetch, ApiClientError } from "@/lib/api-client";
+import { apiFetch, translateApiError } from "@/lib/api-client";
 import { useAuth } from "@/context/AuthContext";
+import { useTranslation } from "@/context/I18nContext";
 import { toast } from "@/components/ui/Misc";
 
 export default function LoginPage() {
@@ -21,6 +22,7 @@ function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const { refresh } = useAuth();
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -33,10 +35,10 @@ function LoginForm() {
     try {
       await apiFetch("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
       await refresh();
-      toast("Welcome back!");
+      toast(t("auth.welcomeBack"));
       router.push(params.get("next") || "/dashboard");
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : "Something went wrong.");
+      setError(translateApiError(err, t));
     } finally {
       setLoading(false);
     }
@@ -44,12 +46,12 @@ function LoginForm() {
 
   return (
     <div className="mx-auto flex min-h-[80vh] w-full max-w-sm flex-col justify-center px-4 py-10">
-      <h1 className="text-2xl font-bold text-gray-900">Log in to DHIIL</h1>
-      <p className="mt-1 text-sm text-gray-500">Find work. Find talent. Connect on WhatsApp.</p>
+      <h1 className="text-2xl font-bold text-gray-900">{t("auth.loginTitle")}</h1>
+      <p className="mt-1 text-sm text-gray-500">{t("auth.loginSubtitle")}</p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <Input
-          label="Email"
+          label={t("common.email")}
           type="email"
           required
           value={email}
@@ -57,7 +59,7 @@ function LoginForm() {
           autoComplete="email"
         />
         <Input
-          label="Password"
+          label={t("common.password")}
           type="password"
           required
           value={password}
@@ -66,14 +68,14 @@ function LoginForm() {
         />
         {error && <p className="text-sm text-red-600">{error}</p>}
         <Button type="submit" fullWidth size="lg" loading={loading}>
-          Log in
+          {t("auth.loginButton")}
         </Button>
       </form>
 
       <p className="mt-6 text-center text-sm text-gray-500">
-        Don&apos;t have an account?{" "}
+        {t("auth.noAccount")}{" "}
         <Link href="/register" className="font-medium text-brand-700">
-          Sign up
+          {t("common.signUp")}
         </Link>
       </p>
     </div>

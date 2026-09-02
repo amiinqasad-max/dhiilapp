@@ -13,7 +13,7 @@ const reportSchema = z.object({
 export const POST = withErrorHandling(async (req: NextRequest) => {
   const user = await requireUser();
   const body = await req.json().catch(() => null);
-  if (!body) throw new ApiException(400, "Invalid request body.");
+  if (!body) throw new ApiException(400, "Invalid request body.", "VALIDATION_ERROR");
   const data = parseOrThrow(reportSchema, body);
 
   const report = await prisma.report.create({

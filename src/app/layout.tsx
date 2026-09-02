@@ -1,37 +1,55 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { I18nProvider } from "@/context/I18nContext";
 import { Navbar } from "@/components/layout/Navbar";
+import { MobileTopBar } from "@/components/layout/MobileTopBar";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { Footer } from "@/components/layout/Footer";
 import { Toaster } from "@/components/ui/Toaster";
 import { InstallPrompt } from "@/components/layout/InstallPrompt";
 import { ServiceWorkerRegister } from "@/components/layout/ServiceWorkerRegister";
+import { getServerLocale } from "@/lib/i18n/server";
+import { getDictionary } from "@/lib/i18n/dictionaries";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
-  title: {
-    default: "DHIIL — Find Work. Find Talent.",
-    template: "%s | DHIIL",
-  },
-  description:
-    "DHIIL is a marketplace that helps clients find the right professional and professionals find the right job — then connects you on WhatsApp to talk.",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "DHIIL",
-  },
-  icons: {
-    icon: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
-    apple: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
-  },
-  openGraph: {
-    type: "website",
-    siteName: "DHIIL",
-    title: "DHIIL — Find Work. Find Talent.",
-    description: "Discover jobs and professionals, then connect on WhatsApp.",
-  },
-};
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+export function generateMetadata(): Metadata {
+  const locale = getServerLocale();
+  const dict = getDictionary(locale);
+
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: `${dict["common.appName"]} — ${dict["common.tagline"]}`,
+      template: `%s | ${dict["common.appName"]}`,
+    },
+    description: dict["home.heroSubtitle"],
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: "DHIIL",
+    },
+    icons: {
+      icon: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+      apple: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+    },
+    openGraph: {
+      type: "website",
+      siteName: "DHIIL",
+      locale: locale === "so" ? "so_SO" : "en_US",
+      title: `${dict["common.appName"]} — ${dict["common.tagline"]}`,
+      description: dict["home.heroSubtitle"],
+    },
+    alternates: {
+      canonical: "/",
+      languages: {
+        so: "/",
+        en: "/",
+      },
+    },
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -42,17 +60,23 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const locale = getServerLocale();
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body className="antialiased">
-        <AuthProvider>
-          <ServiceWorkerRegister />
-          <Toaster />
-          <Navbar />
-          <main className="min-h-[calc(100vh-64px)] pb-bottom-nav md:pb-0">{children}</main>
-          <BottomNav />
-          <InstallPrompt />
-        </AuthProvider>
+        <I18nProvider initialLocale={locale}>
+          <AuthProvider>
+            <ServiceWorkerRegister />
+            <Toaster />
+            <Navbar />
+            <MobileTopBar />
+            <main className="min-h-[calc(100vh-64px)] pb-bottom-nav md:pb-0">{children}</main>
+            <Footer />
+            <BottomNav />
+            <InstallPrompt />
+          </AuthProvider>
+        </I18nProvider>
       </body>
     </html>
   );
