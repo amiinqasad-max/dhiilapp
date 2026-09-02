@@ -14,6 +14,8 @@ export const GET = withErrorHandling(async (req: NextRequest) => {
   const location = searchParams.get("location")?.trim();
   const skill = searchParams.get("skill")?.trim();
   const budgetType = searchParams.get("budgetType")?.trim();
+  const jobType = searchParams.get("jobType")?.trim();
+  const remote = searchParams.get("remote");
   const minBudget = searchParams.get("minBudget");
   const maxBudget = searchParams.get("maxBudget");
   const mine = searchParams.get("mine") === "true";
@@ -38,6 +40,8 @@ export const GET = withErrorHandling(async (req: NextRequest) => {
   if (location) where.location = { contains: location };
   if (skill) where.skills = { contains: skill };
   if (budgetType) where.budgetType = budgetType;
+  if (jobType) where.jobType = jobType;
+  if (remote !== null) where.remote = remote === "true";
   if (minBudget || maxBudget) {
     where.budget = {
       ...(minBudget ? { gte: Number(minBudget) } : {}),
@@ -88,6 +92,8 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
       category: data.category,
       budget: data.budget,
       budgetType: data.budgetType,
+      jobType: data.jobType,
+      remote: data.remote,
       location: data.location || null,
       skills: data.skills && data.skills.length > 0 ? data.skills.join(",") : null,
       deadline: data.deadline ? new Date(data.deadline) : null,

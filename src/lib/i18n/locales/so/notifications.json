@@ -14,5 +14,11 @@
   "withdrawnTitle": "Codsiga waa la soo celiyay",
   "withdrawnMessage": "{name} wuu ka noqday codsigiisii \"{job}\".",
   "jobStatusChangedTitle": "Xaaladda Shaqada waa la Cusboonaysiiyay",
-  "jobStatusChangedMessage": "\"{job}\" hadda waa {status}."
+  "jobStatusChangedMessage": "\"{job}\" hadda waa {status}.",
+  "projectCreatedTitle": "Mashruuca ayaa Bilaabmay",
+  "projectCreatedMessage": "Mashruuc la xiriira \"{job}\" ayaa bilaabmay.",
+  "projectCompletedTitle": "Mashruuca waa la Dhammaystiray",
+  "projectCompletedMessage": "Mashruuca \"{job}\" waxaa loo calaamadeeyay mid la dhammaystiray.",
+  "reviewReceivedTitle": "Qiimeyn Cusub Ayaa La Helay",
+  "reviewReceivedMessage": "{name} ayaa qiimeyn kuu diray."
 }

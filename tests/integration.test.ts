@@ -175,7 +175,7 @@ describe("DHIIL end-to-end marketplace flow", () => {
     actAs(clientSession);
     const notifRes = await notificationsRoute(makeRequest("/api/notifications"));
     const notifBody = await readJson(notifRes);
-    expect(notifBody.notifications.some((n: any) => n.type === "NEW_APPLICATION")).toBe(true);
+    expect(notifBody.notifications.some((n: any) => n.type === "APPLICATION_RECEIVED")).toBe(true);
   });
 
   it("professional cannot apply twice to the same job (duplicate prevention)", async () => {

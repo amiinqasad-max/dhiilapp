@@ -18,9 +18,6 @@ const statusUpdatedKey: Record<ApplicationStatus, string> = {
   ACCEPTED: "applications.statusAccepted",
   REJECTED: "applications.statusRejected",
   WITHDRAWN: "applications.statusWithdrawn",
-  PROJECT: "applications.statusProject",
-  COMPLETED: "applications.statusCompleted",
-  REVIEWED: "applications.statusReviewed",
 };
 
 const actionLabelKey: Record<ApplicationStatus, string> = {
@@ -29,9 +26,6 @@ const actionLabelKey: Record<ApplicationStatus, string> = {
   ACCEPTED: "applications.actionAccept",
   REJECTED: "applications.actionReject",
   WITHDRAWN: "applications.actionWithdraw",
-  PROJECT: "applications.actionProject",
-  COMPLETED: "applications.actionComplete",
-  REVIEWED: "applications.actionReview",
 };
 
 export default function JobApplicationsPage() {

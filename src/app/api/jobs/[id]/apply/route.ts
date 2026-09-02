@@ -52,7 +52,7 @@ export const POST = withErrorHandling(async (req: NextRequest, { params }: { par
   });
 
   // 2. Notify the client inside DHIIL.
-  await NotificationEvents.newApplication(job.clientId, job.title, job.id, user.name);
+  await NotificationEvents.applicationReceived(job.clientId, job.title, job.id, user.name);
 
   // 3. Generate (but do not send) a WhatsApp continuation link.
   let waLink: string | null = null;

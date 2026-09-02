@@ -1,5 +1,14 @@
 import { z } from "zod";
-import { AVAILABILITIES, JOB_TYPES } from "@/types";
+import {
+  AVAILABILITIES,
+  JOB_BUDGET_TYPES,
+  JOB_TYPES,
+  JOB_STATUSES,
+  APPLICATION_STATUSES,
+  PROJECT_STATUSES,
+  FAVORITE_TARGET_TYPES,
+  REPORT_TARGET_TYPES,
+} from "@/types";
 import { ApiException } from "@/lib/api-utils";
 
 export const registerSchema = z.object({
@@ -7,6 +16,7 @@ export const registerSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters."),
   name: z.string().trim().min(2, "Name must be at least 2 characters.").max(100),
   role: z.enum(["CLIENT", "PROFESSIONAL"] as [string, ...string[]]),
+  country: z.string().trim().max(100).optional(),
   phoneCountry: z.string().length(2).optional(),
   phoneNumber: z.string().min(4).max(20).optional(),
 });
@@ -18,9 +28,11 @@ export const loginSchema = z.object({
 
 export const profileUpdateSchema = z.object({
   name: z.string().trim().min(2).max(100).optional(),
+  country: z.string().trim().max(100).optional(),
   title: z.string().trim().max(120).optional(),
   bio: z.string().trim().max(2000).optional(),
   hourlyRate: z.number().nonnegative().max(1_000_000).optional(),
+  experience: z.number().int().nonnegative().max(80).optional(),
   location: z.string().trim().max(120).optional(),
   languages: z.array(z.string().trim().max(40)).max(20).optional(),
   availability: z.enum(AVAILABILITIES as [string, ...string[]]).optional(),
@@ -43,14 +55,16 @@ export const jobCreateSchema = z.object({
   description: z.string().trim().min(20, "Description must be at least 20 characters.").max(5000),
   category: z.string().trim().min(2).max(60),
   budget: z.number().positive("Budget must be greater than 0.").max(10_000_000),
-  budgetType: z.enum(JOB_TYPES as [string, ...string[]]).default("FIXED"),
+  budgetType: z.enum(JOB_BUDGET_TYPES as [string, ...string[]]).default("FIXED"),
+  jobType: z.enum(JOB_TYPES as [string, ...string[]]).default("ONE_TIME"),
   location: z.string().trim().max(120).optional(),
+  remote: z.boolean().default(true),
   skills: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
   deadline: z.string().datetime().optional().or(z.literal("")),
 });
 
 export const jobUpdateSchema = jobCreateSchema.partial().extend({
-  status: z.enum(["OPEN", "CLOSED", "COMPLETED"]).optional(),
+  status: z.enum(JOB_STATUSES as [string, ...string[]]).optional(),
 });
 
 export const applicationCreateSchema = z.object({
@@ -61,16 +75,28 @@ export const applicationCreateSchema = z.object({
 });
 
 export const applicationStatusSchema = z.object({
-  status: z.enum([
-    "PENDING",
-    "SHORTLISTED",
-    "ACCEPTED",
-    "REJECTED",
-    "WITHDRAWN",
-    "PROJECT",
-    "COMPLETED",
-    "REVIEWED",
-  ]),
+  status: z.enum(APPLICATION_STATUSES as [string, ...string[]]),
+});
+
+export const projectStatusSchema = z.object({
+  status: z.enum(PROJECT_STATUSES as [string, ...string[]]),
+  notes: z.string().trim().max(2000).optional(),
+});
+
+export const reviewCreateSchema = z.object({
+  rating: z.number().int().min(1, "Rating must be at least 1.").max(5, "Rating must be at most 5."),
+  comment: z.string().trim().max(2000).optional(),
+});
+
+export const favoriteCreateSchema = z.object({
+  targetType: z.enum(FAVORITE_TARGET_TYPES as [string, ...string[]]),
+  targetId: z.string().uuid(),
+});
+
+export const reportCreateSchema = z.object({
+  targetType: z.enum(REPORT_TARGET_TYPES as [string, ...string[]]),
+  targetId: z.string().min(1),
+  reason: z.string().trim().min(10).max(1000),
 });
 
 /** Parse + throw a friendly, safe message on failure (no zod internals leaked). */

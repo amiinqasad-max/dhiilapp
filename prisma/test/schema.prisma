@@ -1,14 +1,7 @@
-// Test-only mirror of schema.prisma, targeting SQLite.
+// DHIIL Platform — Database Schema
 //
-// Production (prisma/schema.prisma) targets the real Postgres/Supabase
-// database. This sandbox's network policy blocks direct connections to
-// Supabase (only the Supabase MCP tools, proxied server-side, can reach
-// it), so the automated test suite runs the exact same models against a
-// local SQLite file instead — same business logic, same Prisma Client
-// API, different engine. Keep this file's models in lockstep with
-// schema.prisma; `npm test` regenerates the default @prisma/client from
-// THIS file before running (see package.json's "pretest" script), and
-// `npm run dev`/`build` regenerate it from schema.prisma again first.
+// Test-only mirror of schema.prisma, targeting SQLite. See schema.prisma
+// for the canonical Postgres schema and model documentation.
 
 generator client {
   provider = "prisma-client-js"
@@ -19,29 +12,44 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Role: "CLIENT" | "PROFESSIONAL" | "ADMIN"
+// JobStatus: "DRAFT" | "OPEN" | "PAUSED" | "CLOSED" | "CANCELLED" | "COMPLETED"
+// JobBudgetType: "FIXED" | "HOURLY"
+// JobType: "ONE_TIME" | "ONGOING"
+// ApplicationStatus: "PENDING" | "SHORTLISTED" | "ACCEPTED" | "REJECTED" | "WITHDRAWN"
+// ProjectStatus: "ACTIVE" | "COMPLETED" | "CANCELLED"
+// NotificationType: "APPLICATION_RECEIVED" | "APPLICATION_SHORTLISTED" | "APPLICATION_ACCEPTED" | "APPLICATION_REJECTED" | "APPLICATION_WITHDRAWN" | "JOB_STATUS_CHANGED" | "PROJECT_CREATED" | "PROJECT_COMPLETED" | "REVIEW_RECEIVED"
+// FavoriteTargetType: "JOB" | "PROFESSIONAL"
+// ReportTargetType: "USER" | "JOB" | "APPLICATION" | "PORTFOLIO"
+// ReportStatus: "OPEN" | "REVIEWED" | "DISMISSED" | "ACTIONED"
+// VerificationStatus: "UNVERIFIED" | "PENDING" | "VERIFIED" | "REJECTED"
+
 model User {
   id           String  @id @default(uuid())
   email        String  @unique
   passwordHash String
   role         String // Role
   name         String
-  phoneCountry String? // ISO 3166-1 alpha-2, e.g. "SO", "US"
+  country      String? // user's country of residence (free text/name)
+  phoneCountry String? // ISO 3166-1 alpha-2 of the phone number itself, e.g. "SO", "US"
   phoneNumber  String? // raw national/local number as entered
-  isWhatsapp   Boolean @default(false)
+  isWhatsapp   Boolean @default(false) // explicit user confirmation only — a phone number alone never implies this
   isActive     Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  professionalProfile ProfessionalProfile?
-  jobsPosted          Job[]                @relation("ClientJobs")
-  applications        Application[]        @relation("ProfessionalApplications")
-  notifications       Notification[]
-  favorites           Favorite[]
-  reviewsWritten      Review[]             @relation("ReviewAuthor")
-  reviewsReceived     Review[]             @relation("ReviewSubject")
-  reportsFiled        Report[]             @relation("ReportAuthor")
-  verification        Verification?
+  professionalProfile   ProfessionalProfile?
+  jobsPosted             Job[]                @relation("ClientJobs")
+  applications           Application[]        @relation("ProfessionalApplications")
+  notifications           Notification[]
+  favorites               Favorite[]
+  projectsAsClient        Project[]            @relation("ClientProjects")
+  projectsAsProfessional  Project[]            @relation("ProfessionalProjects")
+  reviewsWritten          Review[]             @relation("ReviewAuthor")
+  reviewsReceived         Review[]             @relation("ReviewSubject")
+  reportsFiled            Report[]             @relation("ReportAuthor")
+  verification            Verification?
 
   @@index([role])
 }
@@ -53,6 +61,7 @@ model ProfessionalProfile {
   title           String?
   bio             String?
   hourlyRate      Float?
+  experience      Int? // years of professional experience
   location        String?
   languages       String? // comma-separated
   availability    String  @default("AVAILABLE") // "AVAILABLE" | "BUSY" | "UNAVAILABLE"
@@ -118,20 +127,25 @@ model Job {
   description String
   category    String
   budget      Float
-  budgetType  String    @default("FIXED") // JobType
+  budgetType  String    @default("FIXED") // JobBudgetType
+  jobType     String    @default("ONE_TIME") // JobType
   location    String?
+  remote      Boolean   @default(true)
   skills      String? // comma-separated
   deadline    DateTime?
-  status      String    @default("OPEN") // JobStatus
+  status      String    @default("OPEN") // JobStatus — DHIIL publishes immediately on create (no separate draft-save UI yet); DRAFT/PAUSED/CANCELLED are supported status values for future use and admin moderation.
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   applications Application[]
-  favorites    Favorite[]
+  projects     Project[]
 
   @@index([status])
   @@index([category])
+  @@index([clientId])
+  @@index([jobType])
+  @@index([remote])
 }
 
 model Application {
@@ -144,15 +158,45 @@ model Application {
   proposedPrice  Float
   deliveryTime   String
   portfolioId    String?
-  status         String   @default("PENDING") // ApplicationStatus
+  status         String   @default("PENDING") // ApplicationStatus — ACCEPTED is terminal here; project lifecycle takes over via Project.status
 
   submittedAt         DateTime  @default(now())
   whatsappContactedAt DateTime?
   updatedAt            DateTime @updatedAt
 
-  review Review?
+  project Project?
 
   @@unique([jobId, professionalId])
+  @@index([jobId])
+  @@index([professionalId])
+  @@index([status])
+}
+
+// Created exactly once, transactionally, when a client accepts an
+// application (see src/services/project-service.ts). One accepted
+// application produces exactly one project (applicationId is unique).
+model Project {
+  id             String   @id @default(uuid())
+  applicationId  String   @unique
+  application    Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  jobId          String
+  job            Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  clientId       String
+  client         User     @relation("ClientProjects", fields: [clientId], references: [id], onDelete: Cascade)
+  professionalId String
+  professional   User     @relation("ProfessionalProjects", fields: [professionalId], references: [id], onDelete: Cascade)
+  status         String   @default("ACTIVE") // ProjectStatus
+  startedAt      DateTime @default(now())
+  completedAt    DateTime?
+  notes          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reviews Review[]
+
+  @@index([clientId])
+  @@index([professionalId])
   @@index([status])
 }
 
@@ -161,49 +205,61 @@ model Notification {
   userId  String
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   type    String // NotificationType
-  title   String
-  message String
-  meta    String?
+  title   String // English audit-trail copy; UI renders localized copy from type+meta instead.
+  message String // English audit-trail copy; UI renders localized copy from type+meta instead.
+  meta    String? // JSON-encoded {jobTitle, professionalName, status, ...} for locale-aware rendering
   link    String?
   isRead  Boolean @default(false)
 
   createdAt DateTime @default(now())
 
   @@index([userId, isRead])
+  @@index([createdAt])
 }
 
+// Generalized favorites: a user can favorite a JOB or a PROFESSIONAL.
+// No direct FK to the target (it's polymorphic across two tables, same
+// pattern as Report) — existence/ownership is checked at the app layer.
 model Favorite {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  jobId     String
-  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetType String // FavoriteTargetType
+  targetId   String
+  createdAt  DateTime @default(now())
 
-  @@unique([userId, jobId])
+  @@unique([userId, targetType, targetId])
 }
 
+// A review is only possible between the two participants of a completed
+// Project, one review per (project, reviewer) pair.
 model Review {
-  id            String      @id @default(uuid())
-  applicationId String      @unique
-  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  authorId      String
-  author        User        @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  subjectId     String
-  subject       User        @relation("ReviewSubject", fields: [subjectId], references: [id], onDelete: Cascade)
-  rating        Int
-  comment       String?
-  createdAt     DateTime    @default(now())
+  id         String   @id @default(uuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  reviewerId String
+  reviewer   User     @relation("ReviewAuthor", fields: [reviewerId], references: [id], onDelete: Cascade)
+  revieweeId String
+  reviewee   User     @relation("ReviewSubject", fields: [revieweeId], references: [id], onDelete: Cascade)
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([projectId, reviewerId])
+  @@index([projectId])
+  @@index([reviewerId])
+  @@index([revieweeId])
 }
 
 model Report {
   id         String   @id @default(uuid())
   authorId   String
   author     User     @relation("ReportAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  targetType String
+  targetType String // ReportTargetType
   targetId   String
   reason     String
-  status     String   @default("OPEN")
+  status     String   @default("OPEN") // ReportStatus
   createdAt  DateTime @default(now())
 }
 
@@ -211,7 +267,7 @@ model Verification {
   id        String   @id @default(uuid())
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status    String   @default("UNVERIFIED")
+  status    String   @default("UNVERIFIED") // VerificationStatus
   notes     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

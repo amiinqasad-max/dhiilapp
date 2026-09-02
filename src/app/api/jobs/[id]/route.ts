@@ -4,6 +4,7 @@ import { ApiException, getCurrentUser, requireRole, withErrorHandling } from "@/
 import { jobUpdateSchema, parseOrThrow } from "@/lib/validation";
 import { toJobDTO } from "@/lib/mappers";
 import { NotificationEvents } from "@/services/notification-service";
+import { JOB_STATUS_TRANSITIONS, type JobStatus } from "@/types";
 
 export const GET = withErrorHandling(async (_req: NextRequest, { params }: { params: { id: string } }) => {
   const job = await prisma.job.findUnique({
@@ -34,6 +35,20 @@ export const PATCH = withErrorHandling(async (req: NextRequest, { params }: { pa
   if (!body) throw new ApiException(400, "Invalid request body.", "VALIDATION_ERROR");
   const data = parseOrThrow(jobUpdateSchema, body);
 
+  // Server-side status machine — CLOSED (reached via application accept)
+  // and COMPLETED (reached via project completion) are system-driven and
+  // not directly settable here; see JOB_STATUS_TRANSITIONS.
+  if (data.status !== undefined && data.status !== job.status) {
+    const allowed = JOB_STATUS_TRANSITIONS[job.status] || [];
+    if (!allowed.includes(data.status as JobStatus)) {
+      throw new ApiException(
+        400,
+        `Cannot change job status from ${job.status} to ${data.status}.`,
+        "INVALID_STATUS_TRANSITION"
+      );
+    }
+  }
+
   const updated = await prisma.job.update({
     where: { id: params.id },
     data: {
@@ -42,6 +57,8 @@ export const PATCH = withErrorHandling(async (req: NextRequest, { params }: { pa
       ...(data.category !== undefined ? { category: data.category } : {}),
       ...(data.budget !== undefined ? { budget: data.budget } : {}),
       ...(data.budgetType !== undefined ? { budgetType: data.budgetType } : {}),
+      ...(data.jobType !== undefined ? { jobType: data.jobType } : {}),
+      ...(data.remote !== undefined ? { remote: data.remote } : {}),
       ...(data.location !== undefined ? { location: data.location || null } : {}),
       ...(data.skills !== undefined ? { skills: data.skills.length > 0 ? data.skills.join(",") : null } : {}),
       ...(data.deadline !== undefined ? { deadline: data.deadline ? new Date(data.deadline) : null } : {}),
@@ -50,16 +67,16 @@ export const PATCH = withErrorHandling(async (req: NextRequest, { params }: { pa
     include: { client: { select: { name: true } }, _count: { select: { applications: true } } },
   });
 
-  // Notify professionals with accepted/in-progress applications when the
-  // job's status changes (e.g. closed or completed).
+  // Notify the professional with the active project on this job (if any)
+  // when the job's status changes (e.g. paused, cancelled).
   if (data.status && data.status !== job.status) {
-    const affected = await prisma.application.findMany({
-      where: { jobId: job.id, status: { in: ["ACCEPTED", "PROJECT"] } },
+    const project = await prisma.project.findFirst({
+      where: { jobId: job.id, status: "ACTIVE" },
       select: { professionalId: true },
     });
-    await Promise.all(
-      affected.map((a) => NotificationEvents.jobStatusChanged(a.professionalId, updated.title, job.id, data.status!))
-    );
+    if (project) {
+      await NotificationEvents.jobStatusChanged(project.professionalId, updated.title, job.id, data.status);
+    }
   }
 
   return NextResponse.json({ job: toJobDTO(updated) });

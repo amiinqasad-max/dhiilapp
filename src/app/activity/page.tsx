@@ -11,13 +11,15 @@ import { EmptyState, Skeleton } from "@/components/ui/Misc";
 import type { NotificationDTO, NotificationType } from "@/types";
 
 const notificationKeys: Record<NotificationType, { title: string; message: string }> = {
-  NEW_APPLICATION: { title: "notifications.newApplicationTitle", message: "notifications.newApplicationMessage" },
+  APPLICATION_RECEIVED: { title: "notifications.newApplicationTitle", message: "notifications.newApplicationMessage" },
   APPLICATION_SHORTLISTED: { title: "notifications.shortlistedTitle", message: "notifications.shortlistedMessage" },
   APPLICATION_ACCEPTED: { title: "notifications.acceptedTitle", message: "notifications.acceptedMessage" },
   APPLICATION_REJECTED: { title: "notifications.rejectedTitle", message: "notifications.rejectedMessage" },
   APPLICATION_WITHDRAWN: { title: "notifications.withdrawnTitle", message: "notifications.withdrawnMessage" },
   JOB_STATUS_CHANGED: { title: "notifications.jobStatusChangedTitle", message: "notifications.jobStatusChangedMessage" },
-  REVIEW_RECEIVED: { title: "notifications.newApplicationTitle", message: "notifications.newApplicationMessage" },
+  PROJECT_CREATED: { title: "notifications.projectCreatedTitle", message: "notifications.projectCreatedMessage" },
+  PROJECT_COMPLETED: { title: "notifications.projectCompletedTitle", message: "notifications.projectCompletedMessage" },
+  REVIEW_RECEIVED: { title: "notifications.reviewReceivedTitle", message: "notifications.reviewReceivedMessage" },
 };
 
 const jobStatusKey: Record<string, string> = {

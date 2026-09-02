@@ -6,21 +6,30 @@ export type Role = "CLIENT" | "PROFESSIONAL" | "ADMIN";
 
 export const ROLES: Role[] = ["CLIENT", "PROFESSIONAL", "ADMIN"];
 
-export type JobStatus = "OPEN" | "CLOSED" | "COMPLETED";
-export const JOB_STATUSES: JobStatus[] = ["OPEN", "CLOSED", "COMPLETED"];
+export type JobStatus = "DRAFT" | "OPEN" | "PAUSED" | "CLOSED" | "CANCELLED" | "COMPLETED";
+export const JOB_STATUSES: JobStatus[] = ["DRAFT", "OPEN", "PAUSED", "CLOSED", "CANCELLED", "COMPLETED"];
 
-export type JobType = "FIXED" | "HOURLY";
-export const JOB_TYPES: JobType[] = ["FIXED", "HOURLY"];
+/** How the job is priced. */
+export type JobBudgetType = "FIXED" | "HOURLY";
+export const JOB_BUDGET_TYPES: JobBudgetType[] = ["FIXED", "HOURLY"];
 
-export type ApplicationStatus =
-  | "PENDING"
-  | "SHORTLISTED"
-  | "ACCEPTED"
-  | "REJECTED"
-  | "WITHDRAWN"
-  | "PROJECT"
-  | "COMPLETED"
-  | "REVIEWED";
+/** Whether the work is a single one-off task or an ongoing engagement —
+ * an axis independent of how it's priced (JobBudgetType). */
+export type JobType = "ONE_TIME" | "ONGOING";
+export const JOB_TYPES: JobType[] = ["ONE_TIME", "ONGOING"];
+
+// Job status transitions a client may trigger directly via PATCH
+// /api/jobs/:id. CLOSED (reached when an application is accepted) and
+// COMPLETED (reached when the resulting project completes) are system-
+// driven and intentionally not reachable from here — see
+// src/services/project-service.ts.
+export const JOB_STATUS_TRANSITIONS: Record<string, JobStatus[]> = {
+  DRAFT: ["OPEN", "CANCELLED"],
+  OPEN: ["PAUSED", "CLOSED", "CANCELLED"],
+  PAUSED: ["OPEN", "CLOSED", "CANCELLED"],
+};
+
+export type ApplicationStatus = "PENDING" | "SHORTLISTED" | "ACCEPTED" | "REJECTED" | "WITHDRAWN";
 
 export const APPLICATION_STATUSES: ApplicationStatus[] = [
   "PENDING",
@@ -28,18 +37,15 @@ export const APPLICATION_STATUSES: ApplicationStatus[] = [
   "ACCEPTED",
   "REJECTED",
   "WITHDRAWN",
-  "PROJECT",
-  "COMPLETED",
-  "REVIEWED",
 ];
 
-// Valid application status transitions, keyed by actor.
+// Valid application status transitions, keyed by actor. ACCEPTED is
+// terminal for the application itself — accepting one goes through the
+// dedicated transactional accept flow (creates a Project), never a plain
+// status PATCH; see src/services/project-service.ts.
 export const CLIENT_APPLICATION_TRANSITIONS: Record<string, ApplicationStatus[]> = {
-  PENDING: ["SHORTLISTED", "REJECTED"],
+  PENDING: ["SHORTLISTED", "REJECTED", "ACCEPTED"],
   SHORTLISTED: ["ACCEPTED", "REJECTED"],
-  ACCEPTED: ["PROJECT"],
-  PROJECT: ["COMPLETED"],
-  COMPLETED: ["REVIEWED"],
 };
 
 export const PROFESSIONAL_APPLICATION_TRANSITIONS: Record<string, ApplicationStatus[]> = {
@@ -47,17 +53,32 @@ export const PROFESSIONAL_APPLICATION_TRANSITIONS: Record<string, ApplicationSta
   SHORTLISTED: ["WITHDRAWN"],
 };
 
+export type ProjectStatus = "ACTIVE" | "COMPLETED" | "CANCELLED";
+export const PROJECT_STATUSES: ProjectStatus[] = ["ACTIVE", "COMPLETED", "CANCELLED"];
+
+export const PROJECT_STATUS_TRANSITIONS: Record<string, ProjectStatus[]> = {
+  ACTIVE: ["COMPLETED", "CANCELLED"],
+};
+
 export type NotificationType =
-  | "NEW_APPLICATION"
+  | "APPLICATION_RECEIVED"
   | "APPLICATION_SHORTLISTED"
   | "APPLICATION_ACCEPTED"
   | "APPLICATION_REJECTED"
   | "APPLICATION_WITHDRAWN"
   | "JOB_STATUS_CHANGED"
+  | "PROJECT_CREATED"
+  | "PROJECT_COMPLETED"
   | "REVIEW_RECEIVED";
 
 export type Availability = "AVAILABLE" | "BUSY" | "UNAVAILABLE";
 export const AVAILABILITIES: Availability[] = ["AVAILABLE", "BUSY", "UNAVAILABLE"];
+
+export type FavoriteTargetType = "JOB" | "PROFESSIONAL";
+export const FAVORITE_TARGET_TYPES: FavoriteTargetType[] = ["JOB", "PROFESSIONAL"];
+
+export type ReportTargetType = "USER" | "JOB" | "APPLICATION" | "PORTFOLIO";
+export const REPORT_TARGET_TYPES: ReportTargetType[] = ["USER", "JOB", "APPLICATION", "PORTFOLIO"];
 
 export type ReportStatus = "OPEN" | "REVIEWED" | "DISMISSED" | "ACTIONED";
 export type VerificationStatus = "UNVERIFIED" | "PENDING" | "VERIFIED" | "REJECTED";
@@ -71,6 +92,7 @@ export interface PublicUser {
 
 export interface AuthenticatedUser extends PublicUser {
   email: string;
+  country: string | null;
   phoneCountry: string | null;
   phoneNumber: string | null;
   isWhatsapp: boolean;
@@ -84,8 +106,10 @@ export interface JobDTO {
   description: string;
   category: string;
   budget: number;
-  budgetType: JobType;
+  budgetType: JobBudgetType;
+  jobType: JobType;
   location: string | null;
+  remote: boolean;
   skills: string[];
   deadline: string | null;
   status: JobStatus;
@@ -109,6 +133,42 @@ export interface ApplicationDTO {
   whatsappContactedAt: string | null;
 }
 
+export interface ProjectDTO {
+  id: string;
+  applicationId: string;
+  jobId: string;
+  jobTitle: string;
+  clientId: string;
+  clientName: string;
+  professionalId: string;
+  professionalName: string;
+  status: ProjectStatus;
+  startedAt: string;
+  completedAt: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReviewDTO {
+  id: string;
+  projectId: string;
+  reviewerId: string;
+  reviewerName: string;
+  revieweeId: string;
+  revieweeName: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+}
+
+export interface FavoriteDTO {
+  id: string;
+  targetType: FavoriteTargetType;
+  targetId: string;
+  createdAt: string;
+}
+
 export interface NotificationDTO {
   id: string;
   type: NotificationType;
@@ -130,6 +190,7 @@ export interface ProfessionalProfileDTO {
   title: string | null;
   bio: string | null;
   hourlyRate: number | null;
+  experience: number | null;
   location: string | null;
   languages: string[];
   availability: Availability;
@@ -148,4 +209,5 @@ export interface ProfessionalProfileDTO {
 
 export interface ApiError {
   error: string;
+  code?: string;
 }

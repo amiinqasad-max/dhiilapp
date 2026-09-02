@@ -4,6 +4,8 @@ import { ApiException, requireUser, withErrorHandling } from "@/lib/api-utils";
 import { applicationStatusSchema, parseOrThrow } from "@/lib/validation";
 import { toApplicationDTO } from "@/lib/mappers";
 import { NotificationEvents } from "@/services/notification-service";
+import { acceptApplication } from "@/services/project-service";
+import { toProjectDTO } from "@/lib/mappers";
 import {
   CLIENT_APPLICATION_TRANSITIONS,
   PROFESSIONAL_APPLICATION_TRANSITIONS,
@@ -41,6 +43,18 @@ export const PATCH = withErrorHandling(async (req: NextRequest, { params }: { pa
     );
   }
 
+  // ACCEPTED is not a plain field update — it closes the job, rejects
+  // every competing application, and creates a Project, all atomically.
+  // See src/services/project-service.ts.
+  if (nextStatus === "ACCEPTED") {
+    const project = await acceptApplication(params.id, user.id);
+    const updated = await prisma.application.findUniqueOrThrow({
+      where: { id: params.id },
+      include: { job: { select: { title: true } }, professional: { select: { name: true } } },
+    });
+    return NextResponse.json({ application: toApplicationDTO(updated), project: toProjectDTO(project) });
+  }
+
   const updated = await prisma.application.update({
     where: { id: params.id },
     data: { status: nextStatus },
@@ -50,9 +64,6 @@ export const PATCH = withErrorHandling(async (req: NextRequest, { params }: { pa
   switch (nextStatus) {
     case "SHORTLISTED":
       await NotificationEvents.applicationShortlisted(application.professionalId, application.job.title, application.jobId);
-      break;
-    case "ACCEPTED":
-      await NotificationEvents.applicationAccepted(application.professionalId, application.job.title, application.jobId);
       break;
     case "REJECTED":
       await NotificationEvents.applicationRejected(application.professionalId, application.job.title, application.jobId);

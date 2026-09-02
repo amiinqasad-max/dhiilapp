@@ -117,8 +117,10 @@ function ProfessionalDashboard() {
 
   const pending = applications?.filter((a) => a.status === "PENDING").length ?? 0;
   const shortlisted = applications?.filter((a) => a.status === "SHORTLISTED").length ?? 0;
+  // An ACCEPTED application always has an associated Project (see
+  // project-service.ts); "completed" now lives on Project.status rather
+  // than Application.status, so it's wired up once the Project API lands.
   const accepted = applications?.filter((a) => a.status === "ACCEPTED").length ?? 0;
-  const completed = applications?.filter((a) => a.status === "COMPLETED").length ?? 0;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
@@ -133,7 +135,6 @@ function ProfessionalDashboard() {
         <StatTile label={t("dashboard.pendingTile")} value={pending} />
         <StatTile label={t("dashboard.shortlistedTile")} value={shortlisted} />
         <StatTile label={t("dashboard.acceptedTile")} value={accepted} />
-        <StatTile label={t("dashboard.completedTile")} value={completed} />
       </div>
 
       <h2 className="mt-8 text-lg font-semibold text-gray-900">{t("applications.myApplicationsTitle")}</h2>

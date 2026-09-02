@@ -3,10 +3,16 @@ import type {
   ApplicationStatus,
   JobDTO,
   JobStatus,
+  JobBudgetType,
   JobType,
   NotificationDTO,
   NotificationType,
   ProfessionalProfileDTO,
+  ProjectDTO,
+  ProjectStatus,
+  ReviewDTO,
+  FavoriteDTO,
+  FavoriteTargetType,
   Availability,
 } from "@/types";
 
@@ -19,7 +25,9 @@ export function toJobDTO(
     category: string;
     budget: number;
     budgetType: string;
+    jobType: string;
     location: string | null;
+    remote: boolean;
     skills: string | null;
     deadline: Date | null;
     status: string;
@@ -38,8 +46,10 @@ export function toJobDTO(
     description: job.description,
     category: job.category,
     budget: job.budget,
-    budgetType: job.budgetType as JobType,
+    budgetType: job.budgetType as JobBudgetType,
+    jobType: job.jobType as JobType,
     location: job.location,
+    remote: job.remote,
     skills: job.skills ? job.skills.split(",").filter(Boolean) : [],
     deadline: job.deadline ? job.deadline.toISOString() : null,
     status: job.status as JobStatus,
@@ -79,6 +89,78 @@ export function toApplicationDTO(app: {
   };
 }
 
+export function toProjectDTO(p: {
+  id: string;
+  applicationId: string;
+  jobId: string;
+  clientId: string;
+  professionalId: string;
+  status: string;
+  startedAt: Date;
+  completedAt: Date | null;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  job?: { title: string } | null;
+  client?: { name: string } | null;
+  professional?: { name: string } | null;
+}): ProjectDTO {
+  return {
+    id: p.id,
+    applicationId: p.applicationId,
+    jobId: p.jobId,
+    jobTitle: p.job?.title ?? "",
+    clientId: p.clientId,
+    clientName: p.client?.name ?? "",
+    professionalId: p.professionalId,
+    professionalName: p.professional?.name ?? "",
+    status: p.status as ProjectStatus,
+    startedAt: p.startedAt.toISOString(),
+    completedAt: p.completedAt ? p.completedAt.toISOString() : null,
+    notes: p.notes,
+    createdAt: p.createdAt.toISOString(),
+    updatedAt: p.updatedAt.toISOString(),
+  };
+}
+
+export function toReviewDTO(r: {
+  id: string;
+  projectId: string;
+  reviewerId: string;
+  revieweeId: string;
+  rating: number;
+  comment: string | null;
+  createdAt: Date;
+  reviewer?: { name: string } | null;
+  reviewee?: { name: string } | null;
+}): ReviewDTO {
+  return {
+    id: r.id,
+    projectId: r.projectId,
+    reviewerId: r.reviewerId,
+    reviewerName: r.reviewer?.name ?? "",
+    revieweeId: r.revieweeId,
+    revieweeName: r.reviewee?.name ?? "",
+    rating: r.rating,
+    comment: r.comment,
+    createdAt: r.createdAt.toISOString(),
+  };
+}
+
+export function toFavoriteDTO(f: {
+  id: string;
+  targetType: string;
+  targetId: string;
+  createdAt: Date;
+}): FavoriteDTO {
+  return {
+    id: f.id,
+    targetType: f.targetType as FavoriteTargetType,
+    targetId: f.targetId,
+    createdAt: f.createdAt.toISOString(),
+  };
+}
+
 export function toNotificationDTO(n: {
   id: string;
   type: string;
@@ -115,6 +197,7 @@ export function toProfessionalProfileDTO(profile: {
   title: string | null;
   bio: string | null;
   hourlyRate: number | null;
+  experience: number | null;
   location: string | null;
   languages: string | null;
   availability: string;
@@ -137,6 +220,7 @@ export function toProfessionalProfileDTO(profile: {
     title: profile.title,
     bio: profile.bio,
     hourlyRate: profile.hourlyRate,
+    experience: profile.experience,
     location: profile.location,
     languages: profile.languages ? profile.languages.split(",").filter(Boolean) : [],
     availability: profile.availability as Availability,

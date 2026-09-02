@@ -14,5 +14,11 @@
   "withdrawnTitle": "Application withdrawn",
   "withdrawnMessage": "{name} withdrew their application for \"{job}\".",
   "jobStatusChangedTitle": "Job status updated",
-  "jobStatusChangedMessage": "\"{job}\" is now {status}."
+  "jobStatusChangedMessage": "\"{job}\" is now {status}.",
+  "projectCreatedTitle": "Project started",
+  "projectCreatedMessage": "A project for \"{job}\" has started.",
+  "projectCompletedTitle": "Project completed",
+  "projectCompletedMessage": "The project for \"{job}\" has been marked completed.",
+  "reviewReceivedTitle": "New review received",
+  "reviewReceivedMessage": "{name} left you a review."
 }
