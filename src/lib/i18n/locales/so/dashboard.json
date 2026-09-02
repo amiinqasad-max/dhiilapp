@@ -9,5 +9,10 @@
   "acceptedTile": "La Aqbalay",
   "pendingTile": "Sugaya",
   "completedTile": "La Dhammaystiray",
-  "browseJobsButton": "Fiiri Shaqooyinka"
+  "browseJobsButton": "Fiiri Shaqooyinka",
+  "unreadTile": "Aan la Akhrin",
+  "activeProjectsTile": "Mashruucyo Firfircoon",
+  "completedProjectsTile": "Mashruucyo La Dhammaystiray",
+  "ratingTile_one": "{count} qiimeyn",
+  "ratingTile_other": "{count} qiimeyn"
 }

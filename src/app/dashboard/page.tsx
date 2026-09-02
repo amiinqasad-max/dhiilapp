@@ -9,7 +9,7 @@ import { formatCurrency, formatDate } from "@/lib/i18n/format";
 import { apiFetch } from "@/lib/api-client";
 import { Card, StatusBadge, Skeleton, EmptyState } from "@/components/ui/Misc";
 import { LinkButton } from "@/components/ui/Button";
-import type { ApplicationDTO, JobDTO } from "@/types";
+import type { ApplicationDTO, JobDTO, NotificationDTO, ProjectDTO, ReviewDTO } from "@/types";
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -44,10 +44,14 @@ function ClientDashboard() {
   const { t } = useTranslation();
   const [jobs, setJobs] = useState<JobDTO[] | null>(null);
   const [applications, setApplications] = useState<ApplicationDTO[] | null>(null);
+  const [projects, setProjects] = useState<ProjectDTO[] | null>(null);
+  const [notifications, setNotifications] = useState<NotificationDTO[] | null>(null);
 
   useEffect(() => {
     apiFetch<{ jobs: JobDTO[] }>("/api/jobs?mine=true").then((d) => setJobs(d.jobs));
     apiFetch<{ applications: ApplicationDTO[] }>("/api/applications").then((d) => setApplications(d.applications));
+    apiFetch<{ projects: ProjectDTO[] }>("/api/projects").then((d) => setProjects(d.projects));
+    apiFetch<{ notifications: NotificationDTO[] }>("/api/notifications").then((d) => setNotifications(d.notifications));
   }, []);
 
   const active = jobs?.filter((j) => j.status === "OPEN").length ?? 0;
@@ -55,7 +59,9 @@ function ClientDashboard() {
   const completed = jobs?.filter((j) => j.status === "COMPLETED").length ?? 0;
   const pending = applications?.filter((a) => a.status === "PENDING").length ?? 0;
   const shortlisted = applications?.filter((a) => a.status === "SHORTLISTED").length ?? 0;
-  const accepted = applications?.filter((a) => a.status === "ACCEPTED").length ?? 0;
+  const activeProjects = projects?.filter((p) => p.status === "ACTIVE").length ?? 0;
+  const completedProjects = projects?.filter((p) => p.status === "COMPLETED").length ?? 0;
+  const unread = notifications?.filter((n) => !n.isRead).length ?? 0;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
@@ -74,7 +80,15 @@ function ClientDashboard() {
       <div className="mt-3 grid grid-cols-3 gap-3">
         <StatTile label={t("dashboard.newApplicationsTile")} value={pending} />
         <StatTile label={t("dashboard.shortlistedTile")} value={shortlisted} />
-        <StatTile label={t("dashboard.acceptedTile")} value={accepted} />
+        <StatTile label={t("dashboard.unreadTile")} value={unread} />
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-3">
+        <Link href="/projects">
+          <StatTile label={t("dashboard.activeProjectsTile")} value={activeProjects} />
+        </Link>
+        <Link href="/projects">
+          <StatTile label={t("dashboard.completedProjectsTile")} value={completedProjects} />
+        </Link>
       </div>
 
       <h2 className="mt-8 text-lg font-semibold text-gray-900">{t("jobs.myJobsTitle")}</h2>
@@ -107,20 +121,31 @@ function ClientDashboard() {
 
 function ProfessionalDashboard() {
   const { t, locale } = useTranslation();
+  const { user } = useAuth();
   const [applications, setApplications] = useState<ApplicationDTO[] | null>(null);
   const [recommended, setRecommended] = useState<JobDTO[] | null>(null);
+  const [projects, setProjects] = useState<ProjectDTO[] | null>(null);
+  const [notifications, setNotifications] = useState<NotificationDTO[] | null>(null);
+  const [reviews, setReviews] = useState<ReviewDTO[] | null>(null);
 
   useEffect(() => {
     apiFetch<{ applications: ApplicationDTO[] }>("/api/applications").then((d) => setApplications(d.applications));
     apiFetch<{ jobs: JobDTO[] }>("/api/jobs?status=OPEN&sort=newest").then((d) => setRecommended(d.jobs.slice(0, 4)));
+    apiFetch<{ projects: ProjectDTO[] }>("/api/projects").then((d) => setProjects(d.projects));
+    apiFetch<{ notifications: NotificationDTO[] }>("/api/notifications").then((d) => setNotifications(d.notifications));
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    apiFetch<{ reviews: ReviewDTO[] }>(`/api/reviews?revieweeId=${user.id}`).then((d) => setReviews(d.reviews));
+  }, [user]);
 
   const pending = applications?.filter((a) => a.status === "PENDING").length ?? 0;
   const shortlisted = applications?.filter((a) => a.status === "SHORTLISTED").length ?? 0;
-  // An ACCEPTED application always has an associated Project (see
-  // project-service.ts); "completed" now lives on Project.status rather
-  // than Application.status, so it's wired up once the Project API lands.
-  const accepted = applications?.filter((a) => a.status === "ACCEPTED").length ?? 0;
+  const activeProjects = projects?.filter((p) => p.status === "ACTIVE").length ?? 0;
+  const completedProjects = projects?.filter((p) => p.status === "COMPLETED").length ?? 0;
+  const unread = notifications?.filter((n) => !n.isRead).length ?? 0;
+  const averageRating = reviews && reviews.length > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : null;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
@@ -134,7 +159,19 @@ function ProfessionalDashboard() {
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatTile label={t("dashboard.pendingTile")} value={pending} />
         <StatTile label={t("dashboard.shortlistedTile")} value={shortlisted} />
-        <StatTile label={t("dashboard.acceptedTile")} value={accepted} />
+        <Link href="/projects">
+          <StatTile label={t("dashboard.activeProjectsTile")} value={activeProjects} />
+        </Link>
+        <StatTile label={t("dashboard.unreadTile")} value={unread} />
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-3">
+        <Link href="/projects">
+          <StatTile label={t("dashboard.completedProjectsTile")} value={completedProjects} />
+        </Link>
+        <Card className="text-center">
+          <p className="text-2xl font-bold text-gray-900">{averageRating != null ? averageRating.toFixed(1) : "—"}</p>
+          <p className="text-xs text-gray-500">{t("dashboard.ratingTile", { count: reviews?.length ?? 0 })}</p>
+        </Card>
       </div>
 
       <h2 className="mt-8 text-lg font-semibold text-gray-900">{t("applications.myApplicationsTitle")}</h2>

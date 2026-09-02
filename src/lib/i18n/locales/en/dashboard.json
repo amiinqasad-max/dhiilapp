@@ -9,5 +9,10 @@
   "acceptedTile": "Accepted",
   "pendingTile": "Pending",
   "completedTile": "Completed",
-  "browseJobsButton": "Browse jobs"
+  "browseJobsButton": "Browse jobs",
+  "unreadTile": "Unread",
+  "activeProjectsTile": "Active projects",
+  "completedProjectsTile": "Completed projects",
+  "ratingTile_one": "{count} review",
+  "ratingTile_other": "{count} reviews"
 }
