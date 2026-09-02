@@ -1,0 +1,218 @@
+// Test-only mirror of schema.prisma, targeting SQLite.
+//
+// Production (prisma/schema.prisma) targets the real Postgres/Supabase
+// database. This sandbox's network policy blocks direct connections to
+// Supabase (only the Supabase MCP tools, proxied server-side, can reach
+// it), so the automated test suite runs the exact same models against a
+// local SQLite file instead — same business logic, same Prisma Client
+// API, different engine. Keep this file's models in lockstep with
+// schema.prisma; `npm test` regenerates the default @prisma/client from
+// THIS file before running (see package.json's "pretest" script), and
+// `npm run dev`/`build` regenerate it from schema.prisma again first.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String  @id @default(uuid())
+  email        String  @unique
+  passwordHash String
+  role         String // Role
+  name         String
+  phoneCountry String? // ISO 3166-1 alpha-2, e.g. "SO", "US"
+  phoneNumber  String? // raw national/local number as entered
+  isWhatsapp   Boolean @default(false)
+  isActive     Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  professionalProfile ProfessionalProfile?
+  jobsPosted          Job[]                @relation("ClientJobs")
+  applications        Application[]        @relation("ProfessionalApplications")
+  notifications       Notification[]
+  favorites           Favorite[]
+  reviewsWritten      Review[]             @relation("ReviewAuthor")
+  reviewsReceived     Review[]             @relation("ReviewSubject")
+  reportsFiled        Report[]             @relation("ReportAuthor")
+  verification        Verification?
+
+  @@index([role])
+}
+
+model ProfessionalProfile {
+  id              String  @id @default(uuid())
+  userId          String  @unique
+  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title           String?
+  bio             String?
+  hourlyRate      Float?
+  location        String?
+  languages       String? // comma-separated
+  availability    String  @default("AVAILABLE") // "AVAILABLE" | "BUSY" | "UNAVAILABLE"
+  avatarUrl       String?
+  profileComplete Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  skills    ProfessionalSkill[]
+  portfolio Portfolio[]
+  gigs      Gig[]
+
+  @@index([location])
+}
+
+model Skill {
+  id   String @id @default(uuid())
+  name String @unique
+
+  professionals ProfessionalSkill[]
+}
+
+model ProfessionalSkill {
+  id                    String              @id @default(uuid())
+  professionalProfileId String
+  professionalProfile   ProfessionalProfile @relation(fields: [professionalProfileId], references: [id], onDelete: Cascade)
+  skillId               String
+  skill                 Skill               @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([professionalProfileId, skillId])
+}
+
+model Portfolio {
+  id                    String              @id @default(uuid())
+  professionalProfileId String
+  professionalProfile   ProfessionalProfile @relation(fields: [professionalProfileId], references: [id], onDelete: Cascade)
+  title                 String
+  description           String?
+  imageUrl              String?
+  projectUrl            String?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+}
+
+model Gig {
+  id                    String              @id @default(uuid())
+  professionalProfileId String
+  professionalProfile   ProfessionalProfile @relation(fields: [professionalProfileId], references: [id], onDelete: Cascade)
+  title                 String
+  description           String
+  price                 Float
+  active                Boolean             @default(true)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+}
+
+model Job {
+  id          String    @id @default(uuid())
+  clientId    String
+  client      User      @relation("ClientJobs", fields: [clientId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  category    String
+  budget      Float
+  budgetType  String    @default("FIXED") // JobType
+  location    String?
+  skills      String? // comma-separated
+  deadline    DateTime?
+  status      String    @default("OPEN") // JobStatus
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  applications Application[]
+  favorites    Favorite[]
+
+  @@index([status])
+  @@index([category])
+}
+
+model Application {
+  id             String   @id @default(uuid())
+  jobId          String
+  job            Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  professionalId String
+  professional   User     @relation("ProfessionalApplications", fields: [professionalId], references: [id], onDelete: Cascade)
+  coverLetter    String
+  proposedPrice  Float
+  deliveryTime   String
+  portfolioId    String?
+  status         String   @default("PENDING") // ApplicationStatus
+
+  submittedAt         DateTime  @default(now())
+  whatsappContactedAt DateTime?
+  updatedAt            DateTime @updatedAt
+
+  review Review?
+
+  @@unique([jobId, professionalId])
+  @@index([status])
+}
+
+model Notification {
+  id      String  @id @default(uuid())
+  userId  String
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type    String // NotificationType
+  title   String
+  message String
+  meta    String?
+  link    String?
+  isRead  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+}
+
+model Favorite {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, jobId])
+}
+
+model Review {
+  id            String      @id @default(uuid())
+  applicationId String      @unique
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  authorId      String
+  author        User        @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  subjectId     String
+  subject       User        @relation("ReviewSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+  rating        Int
+  comment       String?
+  createdAt     DateTime    @default(now())
+}
+
+model Report {
+  id         String   @id @default(uuid())
+  authorId   String
+  author     User     @relation("ReportAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  targetType String
+  targetId   String
+  reason     String
+  status     String   @default("OPEN")
+  createdAt  DateTime @default(now())
+}
+
+model Verification {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status    String   @default("UNVERIFIED")
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

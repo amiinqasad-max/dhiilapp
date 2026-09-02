@@ -15,8 +15,22 @@ vi.mock("next/headers", () => import("./mocks/next-headers"));
 
 beforeAll(() => {
   if (fs.existsSync(TEST_DB)) fs.rmSync(TEST_DB);
-  execSync("npx prisma db push --skip-generate --force-reset", {
-    cwd: path.resolve(__dirname, ".."),
+  const cwd = path.resolve(__dirname, "..");
+  // Production (prisma/schema.prisma) targets Postgres/Supabase, which this
+  // sandbox's network policy can't reach directly. The test suite instead
+  // runs the exact same models against a local SQLite file.
+  //
+  // IMPORTANT: the @prisma/client package must already be generated from
+  // prisma/test/schema.prisma *before* Vitest starts (see the "pretest"
+  // npm script) — the shared `prisma` singleton (src/lib/prisma.ts) gets
+  // constructed from whatever client code is on disk the first time any
+  // test file imports it, which can happen during Vitest's collection
+  // phase, before this beforeAll runs. Regenerating the client here would
+  // be too late for files whose module graph already loaded the old
+  // (Postgres-flavored) client. Only `db push` (schema, not code) is safe
+  // to repeat per test file.
+  execSync("npx prisma db push --schema=prisma/test/schema.prisma --skip-generate --force-reset", {
+    cwd,
     env: process.env,
     stdio: "pipe",
   });
