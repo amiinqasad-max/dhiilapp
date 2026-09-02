@@ -29,6 +29,8 @@ export function Toaster() {
       {items.map((item) => (
         <div
           key={item.id}
+          role="status"
+          aria-live={item.kind === "error" ? "assertive" : "polite"}
           className={`pointer-events-auto max-w-sm rounded-xl px-4 py-3 text-sm font-medium text-white shadow-lg ${
             item.kind === "success" ? "bg-gray-900" : "bg-red-600"
           }`}

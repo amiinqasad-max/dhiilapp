@@ -97,7 +97,7 @@ function JobsList() {
         className="tap-target mt-3 text-sm font-medium text-brand-700"
         aria-expanded={showFilters}
       >
-        {t("jobs.filtersTitle")} {showFilters ? "▲" : "▼"}
+        {t("jobs.filtersTitle")} <span aria-hidden="true">{showFilters ? "▲" : "▼"}</span>
       </button>
 
       {showFilters && (

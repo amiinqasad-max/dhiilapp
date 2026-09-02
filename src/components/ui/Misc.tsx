@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 import { useTranslation } from "@/context/I18nContext";
 import { Button } from "@/components/ui/Button";
 
@@ -77,7 +77,7 @@ export function EmptyState({
 export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-red-200 bg-red-50 px-6 py-10 text-center">
+    <div role="alert" className="flex flex-col items-center justify-center rounded-2xl border border-red-200 bg-red-50 px-6 py-10 text-center">
       <p className="text-sm font-medium text-red-700">{message}</p>
       {onRetry && (
         <button
@@ -132,25 +132,75 @@ export function ConfirmDialog({
   onCancel: () => void;
 }) {
   const { t } = useTranslation();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const previouslyFocused = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    // Remember what had focus so it can be restored on close (the button
+    // that opened the dialog, in every real caller), and move focus into
+    // the dialog itself — never leave keyboard focus behind on the page.
+    previouslyFocused.current = document.activeElement as HTMLElement | null;
+    cancelRef.current?.focus();
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onCancel();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusable || focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      // Return focus to the trigger — a keyboard/screen-reader user must
+      // land back where they were, not at the top of the page.
+      previouslyFocused.current?.focus();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
   if (!open) return null;
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-dialog-title"
+      aria-describedby={description ? "confirm-dialog-description" : undefined}
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center"
       onClick={onCancel}
     >
       <div
+        ref={dialogRef}
         className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl safe-bottom"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id="confirm-dialog-title" className="text-base font-semibold text-gray-900">
           {title}
         </h2>
-        {description && <p className="mt-1.5 text-sm text-gray-600">{description}</p>}
+        {description && (
+          <p id="confirm-dialog-description" className="mt-1.5 text-sm text-gray-600">
+            {description}
+          </p>
+        )}
         <div className="mt-5 flex gap-2">
-          <Button variant="outline" fullWidth onClick={onCancel} disabled={loading}>
+          <Button ref={cancelRef} variant="outline" fullWidth onClick={onCancel} disabled={loading}>
             {t("common.cancel")}
           </Button>
           <Button variant={confirmVariant} fullWidth onClick={onConfirm} loading={loading}>
