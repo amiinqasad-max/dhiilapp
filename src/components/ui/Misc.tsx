@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react";
 import { useTranslation } from "@/context/I18nContext";
+import { Button } from "@/components/ui/Button";
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
@@ -13,28 +14,33 @@ const badgeColors: Record<string, string> = {
   OPEN: "bg-brand-50 text-brand-700",
   CLOSED: "bg-gray-100 text-gray-600",
   COMPLETED: "bg-blue-50 text-blue-700",
+  PAUSED: "bg-amber-50 text-amber-700",
+  CANCELLED: "bg-red-50 text-red-700",
+  DRAFT: "bg-gray-100 text-gray-600",
+  ACTIVE: "bg-brand-50 text-brand-700",
   PENDING: "bg-amber-50 text-amber-700",
   SHORTLISTED: "bg-indigo-50 text-indigo-700",
   ACCEPTED: "bg-brand-50 text-brand-700",
   REJECTED: "bg-red-50 text-red-700",
   WITHDRAWN: "bg-gray-100 text-gray-600",
-  PROJECT: "bg-purple-50 text-purple-700",
-  REVIEWED: "bg-teal-50 text-teal-700",
 };
 
-// Job statuses (OPEN/CLOSED/COMPLETED) live in jobs.json, application
-// statuses in applications.json — COMPLETED is shared by both.
+// Job statuses live in jobs.json, application statuses in
+// applications.json, project statuses in projects.json — COMPLETED is
+// shared across jobs/applications/projects.
 const statusKeys: Record<string, string> = {
   OPEN: "jobs.statusOpen",
   CLOSED: "jobs.statusClosed",
+  PAUSED: "jobs.statusPaused",
+  CANCELLED: "jobs.statusCancelled",
+  DRAFT: "jobs.statusDraft",
   COMPLETED: "applications.statusCompleted",
+  ACTIVE: "projects.statusActive",
   PENDING: "applications.statusPending",
   SHORTLISTED: "applications.statusShortlisted",
   ACCEPTED: "applications.statusAccepted",
   REJECTED: "applications.statusRejected",
   WITHDRAWN: "applications.statusWithdrawn",
-  PROJECT: "applications.statusProject",
-  REVIEWED: "applications.statusReviewed",
   DISMISSED: "admin.reportStatusDismissed",
   ACTIONED: "admin.reportStatusActioned",
 };
@@ -96,6 +102,62 @@ export function CardSkeleton() {
       <Skeleton className="mb-2 h-3 w-full" />
       <Skeleton className="mb-2 h-3 w-5/6" />
       <Skeleton className="h-3 w-1/3" />
+    </div>
+  );
+}
+
+/**
+ * Blocking confirmation dialog for hard-to-reverse actions (accepting an
+ * application, closing/cancelling a job, completing/cancelling a project).
+ * Native `<dialog>` gives us focus trapping, Escape-to-close, and correct
+ * screen-reader semantics for free.
+ */
+export function ConfirmDialog({
+  open,
+  title,
+  description,
+  confirmLabel,
+  confirmVariant = "primary",
+  loading,
+  onConfirm,
+  onCancel,
+}: {
+  open: boolean;
+  title: string;
+  description?: string;
+  confirmLabel: string;
+  confirmVariant?: "primary" | "danger";
+  loading?: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const { t } = useTranslation();
+  if (!open) return null;
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-dialog-title"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center"
+      onClick={onCancel}
+    >
+      <div
+        className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl safe-bottom"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 id="confirm-dialog-title" className="text-base font-semibold text-gray-900">
+          {title}
+        </h2>
+        {description && <p className="mt-1.5 text-sm text-gray-600">{description}</p>}
+        <div className="mt-5 flex gap-2">
+          <Button variant="outline" fullWidth onClick={onCancel} disabled={loading}>
+            {t("common.cancel")}
+          </Button>
+          <Button variant={confirmVariant} fullWidth onClick={onConfirm} loading={loading}>
+            {confirmLabel}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

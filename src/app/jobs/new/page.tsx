@@ -21,6 +21,8 @@ export default function NewJobPage() {
   const [category, setCategory] = useState("");
   const [budget, setBudget] = useState("");
   const [budgetType, setBudgetType] = useState("FIXED");
+  const [jobType, setJobType] = useState("ONE_TIME");
+  const [remote, setRemote] = useState(true);
   const [location, setLocation] = useState("");
   const [skills, setSkills] = useState("");
   const [deadline, setDeadline] = useState("");
@@ -46,6 +48,8 @@ export default function NewJobPage() {
         category,
         budget: Number(budget),
         budgetType,
+        jobType,
+        remote,
         location: location || undefined,
         skills: skills
           .split(",")
@@ -119,6 +123,21 @@ export default function NewJobPage() {
             <option value="FIXED">{t("jobs.budgetTypeFixed")}</option>
             <option value="HOURLY">{t("jobs.budgetTypeHourly")}</option>
           </Select>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Select label={t("jobs.jobTypeLabel")} value={jobType} onChange={(e) => setJobType(e.target.value)}>
+            <option value="ONE_TIME">{t("jobs.jobTypeOneTime")}</option>
+            <option value="ONGOING">{t("jobs.jobTypeOngoing")}</option>
+          </Select>
+          <label className="flex items-center gap-2 self-end pb-3 text-sm text-gray-800">
+            <input
+              type="checkbox"
+              checked={remote}
+              onChange={(e) => setRemote(e.target.checked)}
+              className="h-5 w-5 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+            />
+            {t("jobs.remoteCheckboxLabel")}
+          </label>
         </div>
         <Input
           label={t("jobs.locationOptionalLabel")}

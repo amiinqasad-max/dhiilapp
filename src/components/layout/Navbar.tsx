@@ -19,6 +19,7 @@ export function Navbar() {
     { href: "/professionals", label: t("nav.findProfessionals") },
     ...(user?.role === "CLIENT" ? [{ href: "/jobs/new", label: t("nav.postJob") }] : []),
     ...(user ? [{ href: "/dashboard", label: t("nav.dashboard") }] : []),
+    ...(user ? [{ href: "/projects", label: t("nav.projects") }] : []),
     ...(user?.role === "ADMIN" ? [{ href: "/admin", label: t("nav.admin") }] : []),
   ];
 

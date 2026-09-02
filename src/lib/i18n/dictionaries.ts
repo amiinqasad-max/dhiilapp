@@ -16,6 +16,9 @@ import soAdmin from "./locales/so/admin.json";
 import soWhatsapp from "./locales/so/whatsapp.json";
 import soPwa from "./locales/so/pwa.json";
 import soErrors from "./locales/so/errors.json";
+import soProjects from "./locales/so/projects.json";
+import soReviews from "./locales/so/reviews.json";
+import soFavorites from "./locales/so/favorites.json";
 
 // English (en)
 import enCommon from "./locales/en/common.json";
@@ -33,6 +36,9 @@ import enAdmin from "./locales/en/admin.json";
 import enWhatsapp from "./locales/en/whatsapp.json";
 import enPwa from "./locales/en/pwa.json";
 import enErrors from "./locales/en/errors.json";
+import enProjects from "./locales/en/projects.json";
+import enReviews from "./locales/en/reviews.json";
+import enFavorites from "./locales/en/favorites.json";
 
 // A dictionary is a flat map of "namespace.key" -> translated string. Kept
 // as plain JSON + a flat map (not a class or framework object) so a future
@@ -66,6 +72,9 @@ const dictionaries: Record<Locale, Dictionary> = {
     whatsapp: soWhatsapp,
     pwa: soPwa,
     errors: soErrors,
+    projects: soProjects,
+    reviews: soReviews,
+    favorites: soFavorites,
   }),
   en: buildDictionary({
     common: enCommon,
@@ -83,6 +92,9 @@ const dictionaries: Record<Locale, Dictionary> = {
     whatsapp: enWhatsapp,
     pwa: enPwa,
     errors: enErrors,
+    projects: enProjects,
+    reviews: enReviews,
+    favorites: enFavorites,
   }),
 };
 

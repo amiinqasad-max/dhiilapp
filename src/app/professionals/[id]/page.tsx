@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { apiFetch, translateApiError } from "@/lib/api-client";
 import { WhatsAppButton } from "@/components/marketplace/WhatsAppButton";
-import { ErrorState, Skeleton } from "@/components/ui/Misc";
+import { FavoriteButton } from "@/components/marketplace/FavoriteButton";
+import { ErrorState, Skeleton, EmptyState } from "@/components/ui/Misc";
 import { useAuth } from "@/context/AuthContext";
 import { useTranslation } from "@/context/I18nContext";
-import { formatCurrency } from "@/lib/i18n/format";
-import type { Availability, ProfessionalProfileDTO } from "@/types";
+import { formatCurrency, formatDate } from "@/lib/i18n/format";
+import type { Availability, ProfessionalProfileDTO, ReviewDTO } from "@/types";
 
 const availabilityKeys: Record<Availability, string> = {
   AVAILABLE: "professionals.availableStatus",
@@ -21,6 +22,7 @@ export default function ProfessionalDetailPage() {
   const { user } = useAuth();
   const { t, locale } = useTranslation();
   const [profile, setProfile] = useState<ProfessionalProfileDTO | null>(null);
+  const [reviews, setReviews] = useState<ReviewDTO[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [waLink, setWaLink] = useState<string | null>(null);
 
@@ -28,8 +30,14 @@ export default function ProfessionalDetailPage() {
     apiFetch<{ professional: ProfessionalProfileDTO }>(`/api/professionals/${id}`)
       .then((data) => setProfile(data.professional))
       .catch((err) => setError(translateApiError(err, t)));
+    apiFetch<{ reviews: ReviewDTO[] }>(`/api/reviews?revieweeId=${id}`)
+      .then((data) => setReviews(data.reviews))
+      .catch(() => setReviews([]));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  const averageRating =
+    reviews && reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : null;
 
   useEffect(() => {
     if (!user || !profile?.whatsappAvailable) return;
@@ -65,6 +73,11 @@ export default function ProfessionalDetailPage() {
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
             {profile.location && <span>{profile.location}</span>}
             <span>{t(availabilityKeys[profile.availability])}</span>
+            {averageRating != null && reviews && (
+              <span className="text-amber-600">
+                ★ {t("reviews.averageRating", { rating: averageRating.toFixed(1), count: reviews.length })}
+              </span>
+            )}
             {profile.hourlyRate != null && (
               <span className="font-semibold text-brand-700">
                 {formatCurrency(profile.hourlyRate, locale)}
@@ -74,6 +87,19 @@ export default function ProfessionalDetailPage() {
           </div>
         </div>
       </div>
+
+      {user?.role === "CLIENT" && (
+        <div className="mt-3">
+          <FavoriteButton
+            targetType="PROFESSIONAL"
+            targetId={id}
+            savedLabelKey="jobs.favoriteAdd"
+            unsavedLabelKey="jobs.favoriteRemove"
+            toastSavedKey="favorites.savedProfessionalToast"
+            toastRemovedKey="favorites.removedProfessionalToast"
+          />
+        </div>
+      )}
 
       <div className="mt-4">
         {user ? (
@@ -127,6 +153,29 @@ export default function ProfessionalDetailPage() {
           </div>
         </section>
       )}
+
+      <section className="mt-6">
+        <h2 className="text-sm font-semibold text-gray-900">{t("reviews.reviewsHeading")}</h2>
+        <div className="mt-2 space-y-2">
+          {reviews === null && <Skeleton className="h-16 w-full" />}
+          {reviews && reviews.length === 0 && (
+            <EmptyState title={t("reviews.noReviewsTitle")} description={t("reviews.noReviewsDesc")} />
+          )}
+          {reviews?.map((r) => (
+            <div key={r.id} className="rounded-xl border border-gray-200 bg-white p-3.5">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold text-gray-900">{r.reviewerName}</p>
+                <span className="text-sm text-amber-500">
+                  {"★".repeat(r.rating)}
+                  {"☆".repeat(5 - r.rating)}
+                </span>
+              </div>
+              {r.comment && <p className="mt-1 text-sm text-gray-600">{r.comment}</p>}
+              <p className="mt-1 text-xs text-gray-400">{formatDate(r.createdAt, locale)}</p>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

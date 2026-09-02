@@ -1,0 +1,8 @@
+{
+  "addToFavorites": "Save",
+  "removeFromFavorites": "Saved",
+  "savedJobToast": "Job saved to your favorites.",
+  "removedJobToast": "Job removed from your favorites.",
+  "savedProfessionalToast": "Professional saved to your favorites.",
+  "removedProfessionalToast": "Professional removed from your favorites."
+}

@@ -22,5 +22,11 @@
   "ADMIN_SELF_DEACTIVATE": "Ma joojin kartid akoonkaaga maamulaha.",
   "INVALID_PORTFOLIO_SELECTION": "Xulashada shaqooyinkii hore waa khalad.",
   "CANNOT_SHARE_OTHERS_JOB": "Waxaad ku qaybin kartaa oo kaliya shaqooyinkaaga.",
-  "MUST_APPLY_FIRST": "Marka hore shaqada codso ka hor inta aadan macmiilka WhatsApp kala xiriirin."
+  "MUST_APPLY_FIRST": "Marka hore shaqada codso ka hor inta aadan macmiilka WhatsApp kala xiriirin.",
+  "JOB_NOT_OPEN": "Shaqadan mar dambe ma furna.",
+  "JOB_NOT_OWNED": "Waxaad tan u sameyn kartaa oo kaliya shaqooyinkaaga.",
+  "PROJECT_NOT_FOUND": "Mashruuca lama helin.",
+  "PROJECT_NOT_OWNED": "Kama tirsanid mashruucan.",
+  "PROJECT_ALREADY_EXISTS": "Mashruuc horeba ayuu u leeyahay codsigan.",
+  "REVIEW_NOT_ALLOWED": "Halkan qiimeyn kama samayn kartid."
 }

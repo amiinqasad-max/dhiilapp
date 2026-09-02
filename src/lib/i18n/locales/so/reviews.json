@@ -1,0 +1,16 @@
+{
+  "leaveReviewTitle": "Qiimeyn Bixi",
+  "leaveReviewDesc": "Nala wadaag sida mashruuca u socday.",
+  "ratingLabel": "Qiimaynta",
+  "commentLabel": "Faallo (ikhtiyaari)",
+  "commentPlaceholder": "Sidee ahayd waaya-aragnimadu?",
+  "submitButton": "Gudbi Qiimaynta",
+  "submittedTitle": "Qiimayntu waa la Gudbiyay",
+  "submittedDesc": "Waad ku mahadsan tahay jawaabtaada.",
+  "alreadyReviewed": "Horeba ayaad u qiimeysay mashruucan.",
+  "reviewsHeading": "Qiimeymaha",
+  "noReviewsTitle": "Wali qiimeyn ma jirto",
+  "noReviewsDesc": "Qiimeymaha mashruucyada la dhammeeyay halkan ayay ka soo muuqan doonaan.",
+  "averageRating_one": "Celceliska {rating} ({count} qiimeyn)",
+  "averageRating_other": "Celceliska {rating} ({count} qiimeyn)"
+}

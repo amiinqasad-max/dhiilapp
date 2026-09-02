@@ -1,0 +1,16 @@
+{
+  "leaveReviewTitle": "Leave a review",
+  "leaveReviewDesc": "Share how the project went.",
+  "ratingLabel": "Rating",
+  "commentLabel": "Comment (optional)",
+  "commentPlaceholder": "How was the experience?",
+  "submitButton": "Submit review",
+  "submittedTitle": "Review submitted",
+  "submittedDesc": "Thanks for your feedback.",
+  "alreadyReviewed": "You've already reviewed this project.",
+  "reviewsHeading": "Reviews",
+  "noReviewsTitle": "No reviews yet",
+  "noReviewsDesc": "Reviews from completed projects will show up here.",
+  "averageRating_one": "{rating} average ({count} review)",
+  "averageRating_other": "{rating} average ({count} reviews)"
+}

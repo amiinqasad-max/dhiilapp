@@ -6,10 +6,29 @@ import { apiFetch, translateApiError } from "@/lib/api-client";
 import { useAuth } from "@/context/AuthContext";
 import { useTranslation } from "@/context/I18nContext";
 import { formatCurrency, formatDate } from "@/lib/i18n/format";
-import { StatusBadge, Skeleton, ErrorState, toast } from "@/components/ui/Misc";
+import { StatusBadge, Skeleton, ErrorState, ConfirmDialog, toast } from "@/components/ui/Misc";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { WhatsAppButton } from "@/components/marketplace/WhatsAppButton";
-import type { JobDTO } from "@/types";
+import { FavoriteButton } from "@/components/marketplace/FavoriteButton";
+import { JOB_STATUS_TRANSITIONS, type JobDTO, type JobStatus } from "@/types";
+
+type PendingAction = JobStatus | null;
+
+// Only the hard-to-reverse transitions (CLOSED, CANCELLED) get a
+// confirmation dialog — pausing/reopening is trivially reversible.
+const confirmableTransitions: Partial<Record<JobStatus, { titleKey: string; descKey: string; variant: "primary" | "danger" }>> = {
+  CLOSED: { titleKey: "jobs.confirmCloseJobTitle", descKey: "jobs.confirmCloseJobDesc", variant: "danger" },
+  CANCELLED: { titleKey: "jobs.confirmCancelJobTitle", descKey: "jobs.confirmCancelJobDesc", variant: "danger" },
+};
+
+const statusActionLabelKey: Record<JobStatus, string> = {
+  DRAFT: "jobs.reopenJobButton",
+  OPEN: "jobs.reopenJobButton",
+  PAUSED: "jobs.pauseJobButton",
+  CLOSED: "jobs.closeJobButton",
+  CANCELLED: "jobs.cancelJobButton",
+  COMPLETED: "jobs.statusCompleted",
+};
 
 export default function JobDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +39,7 @@ export default function JobDetailPage() {
   const [waShareLink, setWaShareLink] = useState<string | null>(null);
   const [hasApplied, setHasApplied] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
 
   async function load() {
     try {
@@ -51,19 +71,46 @@ export default function JobDetailPage() {
       .catch(() => {});
   }, [user, id]);
 
-  async function closeJob() {
+  async function applyStatusChange(status: JobStatus) {
     if (!job) return;
     setUpdatingStatus(true);
     try {
-      await apiFetch(`/api/jobs/${job.id}`, { method: "PATCH", body: JSON.stringify({ status: "CLOSED" }) });
-      toast(t("applications.updated", { status: t("jobs.statusClosed") }));
-      load();
+      const data = await apiFetch<{ job: JobDTO }>(`/api/jobs/${job.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      });
+      setJob(data.job);
+      toast(t("jobs.jobStatusUpdated", { status: t(statusKeyFor(status)) }));
     } catch (err) {
       toast(translateApiError(err, t), "error");
     } finally {
       setUpdatingStatus(false);
+      setPendingAction(null);
     }
   }
+
+  function requestStatusChange(status: JobStatus) {
+    if (confirmableTransitions[status]) {
+      setPendingAction(status);
+    } else {
+      applyStatusChange(status);
+    }
+  }
+
+  function statusKeyFor(status: JobStatus) {
+    const map: Record<JobStatus, string> = {
+      DRAFT: "jobs.statusDraft",
+      OPEN: "jobs.statusOpen",
+      PAUSED: "jobs.statusPaused",
+      CLOSED: "jobs.statusClosed",
+      CANCELLED: "jobs.statusCancelled",
+      COMPLETED: "jobs.statusCompleted",
+    };
+    return map[status];
+  }
+
+  const allowedTransitions = job ? JOB_STATUS_TRANSITIONS[job.status] || [] : [];
+  const confirmConfig = pendingAction ? confirmableTransitions[pendingAction] : undefined;
 
   if (error) return <div className="mx-auto max-w-3xl px-4 py-6"><ErrorState message={error} /></div>;
   if (!job) {
@@ -85,6 +132,19 @@ export default function JobDetailPage() {
         {t("jobs.postedBy", { name: job.clientName, date: formatDate(job.createdAt, locale) })}
       </p>
 
+      {user?.role === "PROFESSIONAL" && (
+        <div className="mt-3">
+          <FavoriteButton
+            targetType="JOB"
+            targetId={job.id}
+            savedLabelKey="jobs.favoriteAdd"
+            unsavedLabelKey="jobs.favoriteRemove"
+            toastSavedKey="favorites.savedJobToast"
+            toastRemovedKey="favorites.removedJobToast"
+          />
+        </div>
+      )}
+
       <div className="mt-4 flex flex-wrap gap-4 rounded-2xl border border-gray-200 bg-white p-4 text-sm">
         <div>
           <p className="text-xs text-gray-500">{t("common.budget")}</p>
@@ -95,6 +155,14 @@ export default function JobDetailPage() {
         <div>
           <p className="text-xs text-gray-500">{t("common.category")}</p>
           <p className="font-medium text-gray-900">{job.category}</p>
+        </div>
+        <div>
+          <p className="text-xs text-gray-500">{t("jobs.jobTypeLabel")}</p>
+          <p className="font-medium text-gray-900">{job.jobType === "ONGOING" ? t("jobs.jobTypeOngoing") : t("jobs.jobTypeOneTime")}</p>
+        </div>
+        <div>
+          <p className="text-xs text-gray-500">{t("jobs.remoteLabel")}</p>
+          <p className="font-medium text-gray-900">{job.remote ? t("jobs.remoteYes") : t("jobs.remoteNo")}</p>
         </div>
         {job.location && (
           <div>
@@ -135,15 +203,28 @@ export default function JobDetailPage() {
       <div className="fixed inset-x-0 bottom-[var(--bottom-nav-height)] z-30 border-t border-gray-200 bg-white p-3 safe-bottom md:static md:mt-8 md:border-0 md:bg-transparent md:p-0">
         <div className="mx-auto max-w-3xl">
           {isOwner ? (
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <WhatsAppButton link={waShareLink} label={t("whatsapp.shareOnWhatsapp")} fullWidth />
-              <LinkButton href={`/jobs/${job.id}/applications`} variant="outline" fullWidth>
-                {t("jobs.viewApplicationsButton", { count: job.applicationCount })}
-              </LinkButton>
-              {job.status === "OPEN" && (
-                <Button variant="ghost" onClick={closeJob} loading={updatingStatus}>
-                  {t("jobs.closeJobButton")}
-                </Button>
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <WhatsAppButton link={waShareLink} label={t("whatsapp.shareOnWhatsapp")} fullWidth />
+                <LinkButton href={`/jobs/${job.id}/applications`} variant="outline" fullWidth>
+                  {t("jobs.viewApplicationsButton", { count: job.applicationCount })}
+                </LinkButton>
+              </div>
+              {allowedTransitions.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {allowedTransitions.map((status) => (
+                    <Button
+                      key={status}
+                      size="sm"
+                      variant={status === "CANCELLED" || status === "CLOSED" ? "danger" : "ghost"}
+                      loading={updatingStatus && pendingAction === status}
+                      disabled={updatingStatus}
+                      onClick={() => requestStatusChange(status)}
+                    >
+                      {t(statusActionLabelKey[status])}
+                    </Button>
+                  ))}
+                </div>
               )}
             </div>
           ) : user?.role === "PROFESSIONAL" ? (
@@ -167,6 +248,17 @@ export default function JobDetailPage() {
           ) : null}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={pendingAction !== null && !!confirmConfig}
+        title={confirmConfig ? t(confirmConfig.titleKey) : ""}
+        description={confirmConfig ? t(confirmConfig.descKey) : undefined}
+        confirmLabel={pendingAction ? t(statusActionLabelKey[pendingAction]) : ""}
+        confirmVariant={confirmConfig?.variant}
+        loading={updatingStatus}
+        onConfirm={() => pendingAction && applyStatusChange(pendingAction)}
+        onCancel={() => setPendingAction(null)}
+      />
     </div>
   );
 }

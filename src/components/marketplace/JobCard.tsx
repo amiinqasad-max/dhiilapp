@@ -23,6 +23,7 @@ export function JobCard({ job }: { job: JobDTO }) {
           {formatCurrency(job.budget, locale)} {job.budgetType === "HOURLY" ? t("jobs.budgetHourlySuffix") : ""}
         </span>
         <span>{job.category}</span>
+        <span>{job.remote ? t("jobs.remoteYes") : t("jobs.remoteNo")}</span>
         {job.location && <span>{job.location}</span>}
         <span>{t("jobs.applicantsCount", { count: job.applicationCount })}</span>
       </div>

@@ -7,9 +7,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useTranslation } from "@/context/I18nContext";
 import { formatDate, formatNumber } from "@/lib/i18n/format";
 import { apiFetch, translateApiError } from "@/lib/api-client";
-import { StatusBadge, EmptyState, ErrorState, Skeleton, toast } from "@/components/ui/Misc";
-import { Button } from "@/components/ui/Button";
-import type { ApplicationDTO, ApplicationStatus, JobDTO } from "@/types";
+import { StatusBadge, EmptyState, ErrorState, Skeleton, ConfirmDialog, toast } from "@/components/ui/Misc";
+import { Button, LinkButton } from "@/components/ui/Button";
+import type { ApplicationDTO, ApplicationStatus, JobDTO, ProjectDTO } from "@/types";
 import { CLIENT_APPLICATION_TRANSITIONS } from "@/types";
 
 const statusUpdatedKey: Record<ApplicationStatus, string> = {
@@ -37,6 +37,8 @@ export default function JobApplicationsPage() {
   const [applications, setApplications] = useState<ApplicationDTO[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [pendingAccept, setPendingAccept] = useState<ApplicationDTO | null>(null);
+  const [startedProject, setStartedProject] = useState<{ project: ProjectDTO; professionalName: string } | null>(null);
 
   async function load() {
     try {
@@ -61,23 +63,60 @@ export default function JobApplicationsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, user, id]);
 
-  async function updateStatus(applicationId: string, status: ApplicationStatus) {
-    setBusyId(applicationId);
+  async function updateStatus(application: ApplicationDTO, status: ApplicationStatus) {
+    setBusyId(application.id);
     try {
-      await apiFetch(`/api/applications/${applicationId}/status`, {
-        method: "PATCH",
-        body: JSON.stringify({ status }),
-      });
-      toast(t("applications.updated", { status: t(statusUpdatedKey[status]) }));
+      const data = await apiFetch<{ application: ApplicationDTO; project?: ProjectDTO }>(
+        `/api/applications/${application.id}/status`,
+        { method: "PATCH", body: JSON.stringify({ status }) }
+      );
+      if (status === "ACCEPTED" && data.project) {
+        // Trust only the server's response — never simulate the job
+        // close/competitor-reject/project-create side effects locally.
+        setStartedProject({ project: data.project, professionalName: application.professionalName });
+      } else {
+        toast(t("applications.updated", { status: t(statusUpdatedKey[status]) }));
+      }
       load();
     } catch (err) {
       toast(translateApiError(err, t), "error");
     } finally {
       setBusyId(null);
+      setPendingAccept(null);
+    }
+  }
+
+  function requestStatus(application: ApplicationDTO, status: ApplicationStatus) {
+    if (status === "ACCEPTED") {
+      setPendingAccept(application);
+    } else {
+      updateStatus(application, status);
     }
   }
 
   if (error) return <div className="mx-auto max-w-3xl px-4 py-6"><ErrorState message={error} onRetry={load} /></div>;
+
+  if (startedProject) {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-10 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+          ✓
+        </div>
+        <h1 className="mt-4 text-2xl font-bold text-gray-900">{t("applications.projectStartedTitle")}</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          {t("applications.projectStartedDesc", { job: startedProject.project.jobTitle })}
+        </p>
+        <div className="mt-6 space-y-3">
+          <LinkButton href={`/projects/${startedProject.project.id}`} fullWidth size="lg">
+            {t("applications.viewProjectButton")}
+          </LinkButton>
+          <LinkButton href={`/jobs/${id}`} variant="outline" fullWidth>
+            {t("jobs.backToJob")}
+          </LinkButton>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6">
@@ -122,7 +161,7 @@ export default function JobApplicationsPage() {
                       size="sm"
                       variant={status === "REJECTED" ? "danger" : status === "ACCEPTED" ? "primary" : "outline"}
                       loading={busyId === app.id}
-                      onClick={() => updateStatus(app.id, status)}
+                      onClick={() => requestStatus(app, status)}
                     >
                       {t(actionLabelKey[status])}
                     </Button>
@@ -133,6 +172,16 @@ export default function JobApplicationsPage() {
           );
         })}
       </div>
+
+      <ConfirmDialog
+        open={pendingAccept !== null}
+        title={t("applications.confirmAcceptTitle")}
+        description={t("applications.confirmAcceptDesc")}
+        confirmLabel={busyId === pendingAccept?.id ? t("applications.accepting") : t("applications.acceptConfirmButton")}
+        loading={busyId === pendingAccept?.id}
+        onConfirm={() => pendingAccept && updateStatus(pendingAccept, "ACCEPTED")}
+        onCancel={() => setPendingAccept(null)}
+      />
     </div>
   );
 }
