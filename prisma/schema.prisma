@@ -1,19 +1,18 @@
 // DHIIL Platform — Database Schema
 //
-// Development uses SQLite for a zero-dependency local/sandbox setup.
-// SQLite has no native enum type, so enum-like fields are stored as
-// String and validated at the application layer (see src/types and
-// src/lib/validation). Switching the `datasource` provider to
-// "postgresql" (and DATABASE_URL) — and re-introducing `enum` blocks for
-// those fields — is a straightforward production migration with no
-// relational model rewrites required.
+// Backed by Postgres (Supabase project azugezvbmkwbecipmeww). Enum-like
+// fields are kept as String and validated at the application layer (see
+// src/types and src/lib/validation) rather than native Postgres enums —
+// this keeps them cheap to extend (no ALTER TYPE) and keeps local dev
+// against SQLite (swap the provider back to "sqlite" for a zero-
+// dependency local setup) a drop-in option with no model rewrites.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
