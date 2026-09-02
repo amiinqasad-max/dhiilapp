@@ -38,8 +38,11 @@ export const profileUpdateSchema = z.object({
   availability: z.enum(AVAILABILITIES as [string, ...string[]]).optional(),
   avatarUrl: z.string().trim().url().max(500).optional().or(z.literal("")),
   skills: z.array(z.string().trim().min(1).max(40)).max(30).optional(),
-  phoneCountry: z.string().length(2).optional(),
-  phoneNumber: z.string().min(4).max(20).optional(),
+  // The profile form always submits phoneCountry/phoneNumber even when
+  // the user hasn't filled them in yet — accept "" as "not set" rather
+  // than rejecting the whole save with a confusing validation error.
+  phoneCountry: z.string().length(2).optional().or(z.literal("")),
+  phoneNumber: z.string().min(4).max(20).optional().or(z.literal("")),
   isWhatsapp: z.boolean().optional(),
 });
 

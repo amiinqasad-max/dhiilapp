@@ -36,8 +36,8 @@ export const PATCH = withErrorHandling(async (req: NextRequest) => {
     where: { id: user.id },
     data: {
       ...(data.name !== undefined ? { name: data.name } : {}),
-      ...(data.phoneCountry !== undefined ? { phoneCountry: data.phoneCountry } : {}),
-      ...(data.phoneNumber !== undefined ? { phoneNumber: data.phoneNumber } : {}),
+      ...(data.phoneCountry !== undefined ? { phoneCountry: data.phoneCountry || null } : {}),
+      ...(data.phoneNumber !== undefined ? { phoneNumber: data.phoneNumber || null } : {}),
       ...(data.isWhatsapp !== undefined ? { isWhatsapp: data.isWhatsapp } : {}),
     },
   });

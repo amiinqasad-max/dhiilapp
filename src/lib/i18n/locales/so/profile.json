@@ -17,5 +17,14 @@
   "skillsFieldPlaceholder": "Kala sooc kama, tusaale: Naqshadda Summadda, Sumcadda",
   "incompleteWarning": "Ku dar cinwaan, warbixin kooban, iyo ugu yaraan hal xirfad si aad xogtaada u dhammaystirto.",
   "saveButton": "Kaydi Xogtaada",
-  "saved": "Xogtaada waa la kaydiyay."
+  "saved": "Xogtaada waa la kaydiyay.",
+  "portfolioHeading": "Shaqooyinkii Hore",
+  "portfolioTitleLabel": "Cinwaanka Mashruuca",
+  "portfolioTitlePlaceholder": "tusaale: Sumcadda Furnooyinka",
+  "portfolioDescriptionLabel": "Faahfaahinta",
+  "portfolioUrlLabel": "Xiriiriye (ikhtiyaari)",
+  "addPortfolioButton": "Ku Dar Shaqooyinkii Hore",
+  "portfolioAdded": "Waxaa lagu daray shaqooyinkaagii hore.",
+  "portfolioRemoved": "Waxaa laga saaray shaqooyinkaagii hore.",
+  "removePortfolioItem": "Ka saar \"{title}\" shaqooyinkii hore"
 }

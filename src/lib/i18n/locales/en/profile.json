@@ -17,5 +17,14 @@
   "skillsFieldPlaceholder": "Comma-separated, e.g. Logo Design, Branding",
   "incompleteWarning": "Add a title, bio, and at least one skill to complete your profile.",
   "saveButton": "Save profile",
-  "saved": "Profile saved."
+  "saved": "Profile saved.",
+  "portfolioHeading": "Portfolio",
+  "portfolioTitleLabel": "Project title",
+  "portfolioTitlePlaceholder": "e.g. Bakery brand identity",
+  "portfolioDescriptionLabel": "Description",
+  "portfolioUrlLabel": "Link (optional)",
+  "addPortfolioButton": "Add to portfolio",
+  "portfolioAdded": "Added to your portfolio.",
+  "portfolioRemoved": "Removed from your portfolio.",
+  "removePortfolioItem": "Remove \"{title}\" from portfolio"
 }
