@@ -13,6 +13,8 @@ import type {
   ReviewDTO,
   FavoriteDTO,
   FavoriteTargetType,
+  FavoriteJobSummary,
+  FavoriteProfessionalSummary,
   Availability,
 } from "@/types";
 
@@ -147,17 +149,16 @@ export function toReviewDTO(r: {
   };
 }
 
-export function toFavoriteDTO(f: {
-  id: string;
-  targetType: string;
-  targetId: string;
-  createdAt: Date;
-}): FavoriteDTO {
+export function toFavoriteDTO(
+  f: { id: string; targetType: string; targetId: string; createdAt: Date },
+  target: FavoriteJobSummary | FavoriteProfessionalSummary | null = null
+): FavoriteDTO {
   return {
     id: f.id,
     targetType: f.targetType as FavoriteTargetType,
     targetId: f.targetId,
     createdAt: f.createdAt.toISOString(),
+    target,
   };
 }
 

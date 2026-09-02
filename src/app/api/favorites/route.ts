@@ -3,9 +3,16 @@ import { prisma } from "@/lib/prisma";
 import { ApiException, requireUser, withErrorHandling } from "@/lib/api-utils";
 import { favoriteCreateSchema, parseOrThrow } from "@/lib/validation";
 import { toFavoriteDTO } from "@/lib/mappers";
+import type { JobStatus } from "@/types";
 
 /** Always the authenticated caller's own favorites — never a userId
- * supplied by the request. Optional ?targetType= filter. */
+ * supplied by the request. Optional ?targetType= filter.
+ *
+ * Enriches each favorite with a small summary of its target (job title/
+ * status/budget, or professional name/title) so the /favorites UI can
+ * render a useful list without an API call per row — two batched lookups
+ * total (one for all favorited jobs, one for all favorited professionals),
+ * never one per favorite. */
 export const GET = withErrorHandling(async (req: NextRequest) => {
   const user = await requireUser();
   const { searchParams } = new URL(req.url);
@@ -16,7 +23,44 @@ export const GET = withErrorHandling(async (req: NextRequest) => {
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json({ favorites: favorites.map((f) => toFavoriteDTO(f)) });
+  const jobIds = favorites.filter((f) => f.targetType === "JOB").map((f) => f.targetId);
+  const professionalUserIds = favorites.filter((f) => f.targetType === "PROFESSIONAL").map((f) => f.targetId);
+
+  const [jobs, professionals] = await Promise.all([
+    jobIds.length
+      ? prisma.job.findMany({
+          where: { id: { in: jobIds } },
+          select: { id: true, title: true, status: true, budget: true, category: true },
+        })
+      : Promise.resolve([]),
+    professionalUserIds.length
+      ? prisma.professionalProfile.findMany({
+          where: { userId: { in: professionalUserIds } },
+          select: { userId: true, title: true, user: { select: { name: true } } },
+        })
+      : Promise.resolve([]),
+  ]);
+  const jobById = new Map(jobs.map((j) => [j.id, j]));
+  const professionalByUserId = new Map(professionals.map((p) => [p.userId, p]));
+
+  return NextResponse.json({
+    favorites: favorites.map((f) => {
+      const target =
+        f.targetType === "JOB"
+          ? jobById.get(f.targetId)
+            ? {
+              title: jobById.get(f.targetId)!.title,
+              status: jobById.get(f.targetId)!.status as JobStatus,
+              budget: jobById.get(f.targetId)!.budget,
+              category: jobById.get(f.targetId)!.category,
+            }
+            : null
+          : professionalByUserId.get(f.targetId)
+          ? { name: professionalByUserId.get(f.targetId)!.user.name, title: professionalByUserId.get(f.targetId)!.title }
+          : null;
+      return toFavoriteDTO(f, target);
+    }),
+  });
 });
 
 export const POST = withErrorHandling(async (req: NextRequest) => {

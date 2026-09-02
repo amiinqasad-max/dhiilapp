@@ -35,6 +35,8 @@ yarn-error.log*
 /tests/*.db
 /tests/*.db-journal
 /tests/e2e/.db/
+**/*.db
+**/*.db-journal
 
 # playwright
 /playwright-report/

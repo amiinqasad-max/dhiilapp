@@ -4,5 +4,14 @@
   "savedJobToast": "Shaqada waxaa lagu daray kuwaaga la kaydiyay.",
   "removedJobToast": "Shaqada waxaa laga saaray kuwaaga la kaydiyay.",
   "savedProfessionalToast": "Xirfadlaha waxaa lagu daray kuwaaga la kaydiyay.",
-  "removedProfessionalToast": "Xirfadlaha waxaa laga saaray kuwaaga la kaydiyay."
+  "removedProfessionalToast": "Xirfadlaha waxaa laga saaray kuwaaga la kaydiyay.",
+  "savedJobsTitle": "Shaqooyinka la Kaydiyay",
+  "savedJobsSubtitle": "Shaqooyinka aad kaydisay si aad dib ugu soo noqoto.",
+  "savedProfessionalsTitle": "Xirfadlayaasha la Kaydiyay",
+  "savedProfessionalsSubtitle": "Xirfadlayaasha aad kaydisay si aad dib ugu soo noqoto.",
+  "emptyJobsTitle": "Wali shaqo lama kaydin",
+  "emptyJobsDesc": "Marka aad baadho, kaydi shaqo si aad halkan ugu heshid mar dambe.",
+  "emptyProfessionalsTitle": "Wali xirfadle lama kaydin",
+  "emptyProfessionalsDesc": "Marka aad baadho, kaydi xogta xirfadle si aad halkan ugu heshid mar dambe.",
+  "targetGoneLabel": "Waxyaalahan mar dambe ma jirto."
 }

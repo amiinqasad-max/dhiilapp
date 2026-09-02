@@ -20,6 +20,7 @@ export function Navbar() {
     ...(user?.role === "CLIENT" ? [{ href: "/jobs/new", label: t("nav.postJob") }] : []),
     ...(user ? [{ href: "/dashboard", label: t("nav.dashboard") }] : []),
     ...(user ? [{ href: "/projects", label: t("nav.projects") }] : []),
+    ...(user ? [{ href: "/favorites", label: t("nav.favorites") }] : []),
     ...(user?.role === "ADMIN" ? [{ href: "/admin", label: t("nav.admin") }] : []),
   ];
 

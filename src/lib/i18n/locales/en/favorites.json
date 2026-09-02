@@ -4,5 +4,14 @@
   "savedJobToast": "Job saved to your favorites.",
   "removedJobToast": "Job removed from your favorites.",
   "savedProfessionalToast": "Professional saved to your favorites.",
-  "removedProfessionalToast": "Professional removed from your favorites."
+  "removedProfessionalToast": "Professional removed from your favorites.",
+  "savedJobsTitle": "Saved Jobs",
+  "savedJobsSubtitle": "Jobs you've saved to come back to.",
+  "savedProfessionalsTitle": "Saved Professionals",
+  "savedProfessionalsSubtitle": "Professionals you've saved to come back to.",
+  "emptyJobsTitle": "No saved jobs yet",
+  "emptyJobsDesc": "Save a job while browsing to find it here later.",
+  "emptyProfessionalsTitle": "No saved professionals yet",
+  "emptyProfessionalsDesc": "Save a professional's profile while browsing to find it here later.",
+  "targetGoneLabel": "This item no longer exists."
 }

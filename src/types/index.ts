@@ -162,11 +162,26 @@ export interface ReviewDTO {
   createdAt: string;
 }
 
+export interface FavoriteJobSummary {
+  title: string;
+  status: JobStatus;
+  budget: number;
+  category: string;
+}
+
+export interface FavoriteProfessionalSummary {
+  name: string;
+  title: string | null;
+}
+
 export interface FavoriteDTO {
   id: string;
   targetType: FavoriteTargetType;
   targetId: string;
   createdAt: string;
+  /** A small summary of the favorited job/professional, batch-loaded by
+   * the API — null if the target no longer exists. */
+  target: FavoriteJobSummary | FavoriteProfessionalSummary | null;
 }
 
 export interface NotificationDTO {
