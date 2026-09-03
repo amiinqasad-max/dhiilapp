@@ -11,17 +11,18 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        // Matches the DHIIL logo (orange + black).
         brand: {
-          50: "#eefdf6",
-          100: "#d6f9e6",
-          200: "#aef0d0",
-          300: "#78e0b4",
-          400: "#3fc890",
-          500: "#18a874",
-          600: "#0e8760",
-          700: "#0c6c4f",
-          800: "#0d5641",
-          900: "#0b4737",
+          50: "#fff7ed",
+          100: "#ffedd5",
+          200: "#fed7aa",
+          300: "#fdba74",
+          400: "#fb923c",
+          500: "#f2760f",
+          600: "#dd6209",
+          700: "#b6490a",
+          800: "#933a10",
+          900: "#78300f",
         },
       },
       boxShadow: {

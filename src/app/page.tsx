@@ -22,7 +22,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <section className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <FeatureCard
           title={t("home.featurePostTitle")}
           description={t("home.featurePostDesc")}
@@ -34,12 +34,6 @@ export default function HomePage() {
           description={t("home.featureProfileDesc")}
           href="/register"
           cta={t("home.featureProfileCta")}
-        />
-        <FeatureCard
-          title={t("home.featureApplyTitle")}
-          description={t("home.featureApplyDesc")}
-          href="/jobs"
-          cta={t("home.featureApplyCta")}
         />
       </section>
 
