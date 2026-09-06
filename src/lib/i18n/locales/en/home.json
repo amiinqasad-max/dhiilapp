@@ -1,18 +1,18 @@
 {
   "heroEyebrow": "Somalia's Talent Marketplace",
-  "heroTitle": "Showcase your skills and find a ready client, or post the job you need done and find the right professional.",
-  "heroSubtitle": "DHIIL is a platform that connects professionals with people who need work done.",
+  "heroTitle": "Showcase your skills, find clients, or post a job and connect with the right professional.",
+  "heroSubtitle": "DHIIL is a platform that connects skilled professionals with people and businesses looking for work to be done.",
   "ctaFindJobs": "Find Jobs",
   "ctaFindProfessionals": "Find Professionals",
-  "featurePostTitle": "Post Your Job",
-  "featurePostDesc": "Describe the type of work you need, then quickly find a high-quality professional to get it done.",
-  "featurePostCta": "Post Now",
+  "featurePostTitle": "Post a Job",
+  "featurePostDesc": "Describe the work you need done and quickly find a qualified professional who can get the job done.",
+  "featurePostCta": "Post a Job",
   "featureProfileTitle": "Showcase Your Skills",
-  "featureProfileDesc": "Show clients your skills, past work, and experience.",
+  "featureProfileDesc": "Create your professional profile and showcase your skills, experience, and past work to potential clients.",
   "featureProfileCta": "Get Started",
   "howItWorksTitle": "How DHIIL Works",
-  "howItWorksStep1": "Clients post jobs, and professionals showcase their skills.",
-  "howItWorksStep2": "Professionals apply to posted jobs.",
-  "howItWorksStep3": "Clients review applicants, shortlisting them or selecting directly whoever they see fit for the job.",
-  "howItWorksStep4": "The work begins right away until the client receives the finished job and the professional gets paid."
+  "howItWorksStep1": "Post or Showcase: Clients post jobs, while professionals create profiles to showcase their skills and experience.",
+  "howItWorksStep2": "Apply for Jobs: Professionals browse available jobs and apply to the ones that match their skills.",
+  "howItWorksStep3": "Choose the Right Professional: Clients review applications, shortlist candidates, and select the professional who best fits their needs.",
+  "howItWorksStep4": "Get the Work Done: The professional completes the job, the client receives the finished work, and the professional gets paid."
 }

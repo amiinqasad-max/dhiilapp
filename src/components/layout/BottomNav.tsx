@@ -54,7 +54,7 @@ export function BottomNav() {
     { href: "/", label: t("nav.home"), icon: HomeIcon },
     { href: "/jobs", label: t("nav.jobs"), icon: BriefcaseIcon },
     { href: "/professionals", label: t("nav.professionals"), icon: UsersIcon },
-    { href: "/activity", label: t("nav.activity"), icon: BellIcon },
+    ...(user ? [{ href: "/activity", label: t("nav.activity"), icon: BellIcon }] : []),
     { href: user ? "/profile" : "/login", label: user ? t("nav.profile") : t("common.logIn"), icon: UserIcon },
   ];
 
