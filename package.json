@@ -13,7 +13,8 @@
     "test": "vitest run",
     "posttest": "prisma generate",
     "test:e2e": "playwright test",
-    "posttest:e2e": "prisma generate"
+    "posttest:e2e": "prisma generate",
+    "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
