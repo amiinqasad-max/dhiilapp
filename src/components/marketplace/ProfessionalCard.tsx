@@ -16,10 +16,10 @@ export function ProfessionalCard({ profile }: { profile: ProfessionalProfileDTO 
   return (
     <Link
       href={`/professionals/${profile.userId}`}
-      className="block rounded-2xl border border-gray-200 bg-white p-4 shadow-card transition-shadow hover:shadow-md active:scale-[0.99]"
+      className="block rounded-3xl border border-gray-100 bg-white/90 p-4 shadow-card transition-shadow hover:shadow-lg active:scale-[0.99]"
     >
       <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-100 text-lg font-bold text-brand-700">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-brand-400 to-brand-700 text-lg font-bold text-white">
           {profile.avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={profile.avatarUrl} alt={profile.name} className="h-full w-full object-cover" />
@@ -41,7 +41,7 @@ export function ProfessionalCard({ profile }: { profile: ProfessionalProfileDTO 
       {profile.skills.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {profile.skills.slice(0, 4).map((s) => (
-            <span key={s} className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-600">
+            <span key={s} className="rounded-full bg-brand-50 px-2.5 py-0.5 text-[11px] font-semibold text-brand-700">
               {s}
             </span>
           ))}

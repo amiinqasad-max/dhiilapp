@@ -11,7 +11,7 @@ export function JobCard({ job }: { job: JobDTO }) {
   return (
     <Link
       href={`/jobs/${job.id}`}
-      className="block rounded-2xl border border-gray-200 bg-white p-4 shadow-card transition-shadow hover:shadow-md active:scale-[0.99]"
+      className="block rounded-3xl border border-gray-100 bg-white/90 p-4 shadow-card transition-shadow hover:shadow-lg active:scale-[0.99]"
     >
       <div className="flex items-start justify-between gap-2">
         <h3 className="text-base font-semibold text-gray-900">{job.title}</h3>
@@ -30,7 +30,7 @@ export function JobCard({ job }: { job: JobDTO }) {
       {job.skills.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {job.skills.slice(0, 4).map((s) => (
-            <span key={s} className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-600">
+            <span key={s} className="rounded-full bg-brand-50 px-2.5 py-0.5 text-[11px] font-semibold text-brand-700">
               {s}
             </span>
           ))}

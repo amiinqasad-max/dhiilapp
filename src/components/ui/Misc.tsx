@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl border border-gray-200 bg-white p-4 shadow-card ${className}`}>{children}</div>
+    <div className={`rounded-3xl border border-gray-100 bg-white/90 p-4 shadow-card ${className}`}>{children}</div>
   );
 }
 

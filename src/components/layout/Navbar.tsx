@@ -25,7 +25,7 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 hidden border-b border-gray-200 bg-white/95 backdrop-blur safe-top md:block">
+    <header className="sticky top-0 z-40 hidden border-b border-black/[0.06] bg-[var(--background)]/80 backdrop-blur-xl safe-top md:block">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <Link href="/" className="flex items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}

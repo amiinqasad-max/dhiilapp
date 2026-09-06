@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { I18nProvider } from "@/context/I18nContext";
@@ -11,6 +12,8 @@ import { InstallPrompt } from "@/components/layout/InstallPrompt";
 import { ServiceWorkerRegister } from "@/components/layout/ServiceWorkerRegister";
 import { getServerLocale } from "@/lib/i18n/server";
 import { getDictionary } from "@/lib/i18n/dictionaries";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
@@ -56,15 +59,15 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#0e8760",
+  themeColor: "#e95b18",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const locale = getServerLocale();
 
   return (
-    <html lang={locale}>
-      <body className="antialiased">
+    <html lang={locale} className={inter.variable}>
+      <body className="antialiased font-sans">
         <I18nProvider initialLocale={locale}>
           <AuthProvider>
             <ServiceWorkerRegister />
