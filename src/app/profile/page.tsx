@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useTranslation } from "@/context/I18nContext";
@@ -8,13 +8,15 @@ import { apiFetch, translateApiError } from "@/lib/api-client";
 import { Input, Textarea, Select } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { Card, Skeleton, toast } from "@/components/ui/Misc";
+import { getCountryOptions } from "@/lib/countries";
 import type { ProfessionalProfileDTO } from "@/types";
 
 type PortfolioItem = ProfessionalProfileDTO["portfolio"][number];
 
 export default function ProfilePage() {
   const { user, loading: authLoading, refresh } = useAuth();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const countryOptions = useMemo(() => getCountryOptions(locale), [locale]);
   const router = useRouter();
   const [profile, setProfile] = useState<ProfessionalProfileDTO | null>(null);
   const [loading, setLoading] = useState(true);
@@ -160,14 +162,18 @@ export default function ProfilePage() {
         <Card className="space-y-3">
           <p className="text-sm font-semibold text-gray-900">{t("profile.whatsappContactHeading")}</p>
           <div className="grid grid-cols-3 gap-3">
-            <Input
+            <Select
               label={t("profile.countryLabel")}
               value={phoneCountry}
-              onChange={(e) => setPhoneCountry(e.target.value.toUpperCase())}
-              maxLength={2}
-              hint={t("profile.countryHint")}
+              onChange={(e) => setPhoneCountry(e.target.value)}
               className="col-span-1"
-            />
+            >
+              {countryOptions.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.name} {c.dialCode ? `(+${c.dialCode})` : ""}
+                </option>
+              ))}
+            </Select>
             <Input
               label={t("profile.phoneNumberLabel")}
               value={phoneNumber}
