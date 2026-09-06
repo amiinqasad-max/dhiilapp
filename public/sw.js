@@ -65,7 +65,11 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          caches.open(SHELL_CACHE).then((cache) => cache.put(request, response.clone()));
+          // Clone synchronously, before the body can be consumed elsewhere —
+          // caches.open() is async, so cloning inside its .then() risks
+          // racing the browser's own read of the (single-use) response body.
+          const responseCopy = response.clone();
+          caches.open(SHELL_CACHE).then((cache) => cache.put(request, responseCopy));
           return response;
         })
         .catch(async () => {
