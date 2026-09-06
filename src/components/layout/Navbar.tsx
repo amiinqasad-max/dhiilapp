@@ -27,9 +27,9 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 hidden border-b border-gray-200 bg-white/95 backdrop-blur safe-top md:block">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2 text-xl font-extrabold tracking-tight text-brand-700">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white">D</span>
-          {t("common.appName")}
+        <Link href="/" className="flex items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt={t("common.appName")} className="h-11 w-auto" />
         </Link>
         <nav className="flex items-center gap-6 text-sm font-medium text-gray-600">
           {links.map((l) => (
