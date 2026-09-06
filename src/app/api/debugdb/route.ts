@@ -6,6 +6,8 @@ import { NextResponse } from "next/server";
  * query succeeds). Added solely to debug the production DATABASE_URL
  * connectivity issue; delete once resolved.
  */
+export const dynamic = "force-dynamic";
+
 export const GET = async () => {
   const raw = process.env.DATABASE_URL || process.env.POSTGRES_PRISMA_URL || "";
   const source = process.env.DATABASE_URL
