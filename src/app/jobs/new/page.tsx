@@ -62,6 +62,11 @@ export default function NewJobPage() {
       toast(t("jobs.publishedTitle"));
       const link = await apiFetch<{ link: string }>(`/api/jobs/${data.job.id}/whatsapp-share-link`);
       setWaLink(link.link);
+      // Best-effort: open WhatsApp's share picker automatically, in the
+      // same gesture chain as the form submit. Browsers may still block
+      // this — the WhatsAppButton below is always rendered as a guaranteed
+      // fallback either way.
+      window.open(link.link, "_blank", "noopener,noreferrer");
     } catch (err) {
       setError(translateApiError(err, t));
     } finally {

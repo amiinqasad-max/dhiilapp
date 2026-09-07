@@ -63,6 +63,16 @@ export default function ApplyPage() {
       setApplicationId(data.application.id);
       setWaLink(data.whatsappLink);
       toast(t("jobs.applicationReadyTitle"));
+      // Best-effort: open WhatsApp automatically right away, in the same
+      // gesture chain as the form submit, so the professional doesn't have
+      // to find/tap the button separately. Browsers may still block this
+      // (e.g. a delayed response, strict popup settings) — the visible
+      // WhatsAppButton below is always rendered as a guaranteed fallback,
+      // and we never claim the message was actually sent either way.
+      if (data.whatsappLink) {
+        window.open(data.whatsappLink, "_blank", "noopener,noreferrer");
+        apiFetch(`/api/applications/${data.application.id}/whatsapp-contacted`, { method: "POST" }).catch(() => {});
+      }
     } catch (err) {
       setError(translateApiError(err, t));
     } finally {

@@ -15,6 +15,22 @@ const prisma = new PrismaClient();
 
 const DEMO_PASSWORD = "Demo12345!";
 
+// Demo WhatsApp numbers (fake, valid-format Somali mobile numbers) so the
+// WhatsApp contact flow has something real to open when testing against
+// this seed data — without them every WhatsAppButton renders disabled.
+const PROFESSIONAL_PHONE_NUMBERS: Record<string, string> = {
+  "amina.hassan@demo.dhiil.app": "611234511",
+  "mohamed.abdi@demo.dhiil.app": "611234512",
+  "faadumo.warsame@demo.dhiil.app": "611234513",
+  "ahmed.ali@demo.dhiil.app": "611234514",
+  "hodan.mohamud@demo.dhiil.app": "611234515",
+  "abdirahman.jama@demo.dhiil.app": "611234516",
+  "sagal.nur@demo.dhiil.app": "611234517",
+  "khalid.omar@demo.dhiil.app": "611234518",
+  "ikraan.said@demo.dhiil.app": "611234519",
+  "yusuf.farah@demo.dhiil.app": "611234520",
+};
+
 async function hashPassword(password: string) {
   return bcrypt.hash(password, 12);
 }
@@ -143,11 +159,11 @@ const professionals = [
 ];
 
 const clients = [
-  { email: "client1@demo.dhiil.app", name: "Nasteexo Ibrahim", country: "Somalia" },
-  { email: "client2@demo.dhiil.app", name: "Cabdullahi Xasan", country: "Somalia" },
-  { email: "client3@demo.dhiil.app", name: "Sahra Maxamed", country: "Somalia" },
-  { email: "client4@demo.dhiil.app", name: "Warsame Cali", country: "Somalia" },
-  { email: "client5@demo.dhiil.app", name: "Deeqa Yusuf", country: "Somalia" },
+  { email: "client1@demo.dhiil.app", name: "Nasteexo Ibrahim", country: "Somalia", phoneNumber: "611234501" },
+  { email: "client2@demo.dhiil.app", name: "Cabdullahi Xasan", country: "Somalia", phoneNumber: "611234502" },
+  { email: "client3@demo.dhiil.app", name: "Sahra Maxamed", country: "Somalia", phoneNumber: "611234503" },
+  { email: "client4@demo.dhiil.app", name: "Warsame Cali", country: "Somalia", phoneNumber: "611234504" },
+  { email: "client5@demo.dhiil.app", name: "Deeqa Yusuf", country: "Somalia", phoneNumber: "611234505" },
 ];
 
 const jobs = [
@@ -281,13 +297,16 @@ async function main() {
   for (const c of clients) {
     const user = await prisma.user.upsert({
       where: { email: c.email },
-      update: {},
+      update: { phoneCountry: "SO", phoneNumber: c.phoneNumber, isWhatsapp: true },
       create: {
         email: c.email,
         passwordHash,
         role: "CLIENT",
         name: c.name,
         country: c.country,
+        phoneCountry: "SO",
+        phoneNumber: c.phoneNumber,
+        isWhatsapp: true,
       },
     });
     clientIdByEmail.set(c.email, user.id);
@@ -320,15 +339,19 @@ async function main() {
 
   console.log("Seeding demo professionals + profiles + gigs...");
   for (const p of professionals) {
+    const phoneNumber = PROFESSIONAL_PHONE_NUMBERS[p.email];
     const user = await prisma.user.upsert({
       where: { email: p.email },
-      update: {},
+      update: { phoneCountry: "SO", phoneNumber, isWhatsapp: true },
       create: {
         email: p.email,
         passwordHash,
         role: "PROFESSIONAL",
         name: p.name,
         country: "Somalia",
+        phoneCountry: "SO",
+        phoneNumber,
+        isWhatsapp: true,
       },
     });
 
