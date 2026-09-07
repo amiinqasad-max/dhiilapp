@@ -4,7 +4,7 @@ import { ApiException, requireRole, withErrorHandling } from "@/lib/api-utils";
 import { applicationCreateSchema, parseOrThrow } from "@/lib/validation";
 import { toApplicationDTO } from "@/lib/mappers";
 import { NotificationEvents } from "@/services/notification-service";
-import { generateWhatsAppLink, WhatsAppTemplates } from "@/lib/whatsapp";
+import { generateDhiilWhatsAppLink, WhatsAppTemplates } from "@/lib/whatsapp";
 import { getServerLocale } from "@/lib/i18n/server";
 
 // Professional applies to a job. Application is saved to the database
@@ -14,7 +14,7 @@ import { getServerLocale } from "@/lib/i18n/server";
 export const POST = withErrorHandling(async (req: NextRequest, { params }: { params: { id: string } }) => {
   const user = await requireRole("PROFESSIONAL");
 
-  const job = await prisma.job.findUnique({ where: { id: params.id }, include: { client: true } });
+  const job = await prisma.job.findUnique({ where: { id: params.id } });
   if (!job) throw new ApiException(404, "Job not found.", "JOB_NOT_FOUND");
   if (job.status !== "OPEN") throw new ApiException(400, "This job is no longer accepting applications.", "JOB_CLOSED");
   if (job.clientId === user.id) throw new ApiException(400, "You cannot apply to your own job.", "CANNOT_APPLY_OWN_JOB");
@@ -54,31 +54,30 @@ export const POST = withErrorHandling(async (req: NextRequest, { params }: { par
   // 2. Notify the client inside DHIIL.
   await NotificationEvents.applicationReceived(job.clientId, job.title, job.id, user.name);
 
-  // 3. Generate (but do not send) a WhatsApp continuation link.
-  let waLink: string | null = null;
-  if (job.client.isWhatsapp) {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
-    let portfolioUrl: string | undefined;
-    if (data.portfolioId) {
-      const portfolio = await prisma.portfolio.findUnique({ where: { id: data.portfolioId } });
-      portfolioUrl = portfolio?.projectUrl || undefined;
-    }
-    const message = WhatsAppTemplates.application(
-      {
-        jobTitle: job.title,
-        category: job.category,
-        professionalName: user.name,
-        skills: job.skills ? job.skills.split(",").filter(Boolean) : [],
-        proposedPrice: data.proposedPrice,
-        deliveryTime: data.deliveryTime,
-        coverLetter: data.coverLetter,
-        portfolioUrl,
-        applicationUrl: `${appUrl}/jobs/${job.id}`,
-      },
-      getServerLocale()
-    );
-    waLink = generateWhatsAppLink(job.client.phoneNumber, job.client.phoneCountry, message);
+  // 3. Generate (but do not send) a WhatsApp continuation link — routed to
+  // DHIIL's own WhatsApp number rather than the client's personal number,
+  // so every job application is relayed through DHIIL.
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  let portfolioUrl: string | undefined;
+  if (data.portfolioId) {
+    const portfolio = await prisma.portfolio.findUnique({ where: { id: data.portfolioId } });
+    portfolioUrl = portfolio?.projectUrl || undefined;
   }
+  const message = WhatsAppTemplates.application(
+    {
+      jobTitle: job.title,
+      category: job.category,
+      professionalName: user.name,
+      skills: job.skills ? job.skills.split(",").filter(Boolean) : [],
+      proposedPrice: data.proposedPrice,
+      deliveryTime: data.deliveryTime,
+      coverLetter: data.coverLetter,
+      portfolioUrl,
+      applicationUrl: `${appUrl}/jobs/${job.id}`,
+    },
+    getServerLocale()
+  );
+  const waLink = generateDhiilWhatsAppLink(message);
 
   return NextResponse.json(
     { application: toApplicationDTO(application), whatsappLink: waLink },

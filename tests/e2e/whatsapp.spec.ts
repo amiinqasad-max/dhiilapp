@@ -1,11 +1,13 @@
 import { test, expect, uniqueEmail } from "./fixtures";
 import { registerViaUI, postJobViaUI, setWhatsAppNumber, logoutViaUI } from "./helpers";
 
-// Verifies the WhatsApp CTA end to end through the real UI: correct
-// number used, isWhatsapp gating respected, correct URL structure,
-// localized template — and, critically, that nothing is ever actually
-// sent. We only ever read the generated `href`; we never click through
-// to wa.me (that would try to leave the page for a real external site).
+// Verifies the WhatsApp CTA end to end through the real UI: job
+// applications and professional-contact requests are routed to DHIIL's
+// own WhatsApp number (not the other party's personal number), correct
+// URL structure, localized template — and, critically, that nothing is
+// ever actually sent. We only ever read the generated `href`; we never
+// click through to wa.me (that would try to leave the page for a real
+// external site).
 test.describe("WhatsApp integration (link generation only, never sends)", () => {
   test("a client with isWhatsapp enabled produces a correctly structured share link", async ({ page }) => {
     const clientEmail = uniqueEmail("wa-client");
@@ -36,7 +38,7 @@ test.describe("WhatsApp integration (link generation only, never sends)", () => 
     await expect(shareLink).toHaveAttribute("target", "_blank");
   });
 
-  test("professional applying to a WhatsApp-enabled client's job gets a correctly addressed link; isWhatsapp=false hides it", async ({
+  test("professional applying to a job gets a WhatsApp link addressed to DHIIL, not the client", async ({
     page,
   }) => {
     const clientEmail = uniqueEmail("wa-client-2");
@@ -44,7 +46,6 @@ test.describe("WhatsApp integration (link generation only, never sends)", () => 
     const jobTitle = `E2E WhatsApp Apply Job ${Date.now()}`;
 
     await registerViaUI(page, "CLIENT", { name: "WA Job Owner", email: clientEmail, password: "password123" });
-    await setWhatsAppNumber(page, "US", "2025550199");
     await postJobViaUI(page, {
       title: jobTitle,
       description: "Job used to verify the professional's post-apply WhatsApp CTA is correctly addressed.",
@@ -66,8 +67,8 @@ test.describe("WhatsApp integration (link generation only, never sends)", () => 
     const continueLink = page.getByRole("link", { name: /Continue on WhatsApp/ });
     await expect(continueLink).toBeVisible();
     const href = await continueLink.getAttribute("href");
-    // The client's normalized US number (2025550199 -> +12025550199).
-    expect(href).toMatch(/^https:\/\/wa\.me\/12025550199\?text=/);
+    // Routed to DHIIL's own WhatsApp number, never the client's personal one.
+    expect(href).toMatch(/^https:\/\/wa\.me\/251915253029\?text=/);
     const decoded = decodeURIComponent(href!.split("?text=")[1]);
     expect(decoded).toContain(jobTitle);
     expect(decoded.toLowerCase()).not.toContain("message sent");
@@ -75,15 +76,16 @@ test.describe("WhatsApp integration (link generation only, never sends)", () => 
     expect(decoded.toLowerCase()).not.toContain("read");
   });
 
-  test("a professional without isWhatsapp enabled shows no usable contact link on their public profile", async ({
+  test("contacting a professional works even without their own isWhatsapp enabled — routed to DHIIL", async ({
     page,
   }) => {
     const clientEmail = uniqueEmail("wa-client-3");
     const proEmail = uniqueEmail("wa-pro-2");
 
     await registerViaUI(page, "PROFESSIONAL", { name: "No WhatsApp Pro", email: proEmail, password: "password123" });
-    // Deliberately leave isWhatsapp unset — explicit opt-in only, never
-    // inferred from a phone number being present.
+    // Deliberately leave isWhatsapp unset on the professional's own
+    // profile — the contact link no longer depends on it, since it's
+    // routed to DHIIL's own number rather than the professional's.
     await page.goto("/profile");
     await page.getByLabel("Phone number").fill("2025550188");
     await page.getByRole("button", { name: "Save profile" }).click();
@@ -93,6 +95,9 @@ test.describe("WhatsApp integration (link generation only, never sends)", () => 
     await registerViaUI(page, "CLIENT", { name: "WA Visitor Client", email: clientEmail, password: "password123" });
     await page.goto("/professionals");
     await page.getByRole("link", { name: "No WhatsApp Pro" }).click();
-    await expect(page.getByRole("button", { name: "WhatsApp not available" })).toBeVisible();
+    const contactLink = page.getByRole("link", { name: /Contact.*WhatsApp/i });
+    await expect(contactLink).toBeVisible();
+    const href = await contactLink.getAttribute("href");
+    expect(href).toMatch(/^https:\/\/wa\.me\/251915253029\?text=/);
   });
 });

@@ -40,11 +40,14 @@ export default function ProfessionalDetailPage() {
     reviews && reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : null;
 
   useEffect(() => {
-    if (!user || !profile?.whatsappAvailable) return;
+    // Always fetch the contact link once logged in — it's routed to
+    // DHIIL's own WhatsApp number, not the professional's personal one,
+    // so it no longer depends on the professional's own WhatsApp opt-in.
+    if (!user) return;
     apiFetch<{ link: string | null }>(`/api/professionals/${id}/whatsapp-link`)
       .then((data) => setWaLink(data.link))
       .catch(() => setWaLink(null));
-  }, [user, profile, id]);
+  }, [user, id]);
 
   if (error) return <div className="mx-auto max-w-3xl px-4 py-6"><ErrorState message={error} /></div>;
   if (!profile) {

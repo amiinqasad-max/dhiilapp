@@ -162,9 +162,10 @@ describe("DHIIL end-to-end marketplace flow", () => {
     expect(body.application.status).toBe("PENDING");
     applicationId = body.application.id;
 
-    // WhatsApp link points at the client's number, is fully URL-encoded,
-    // and carries the job title + application URL, but never claims delivery.
-    expect(body.whatsappLink).toMatch(/^https:\/\/wa\.me\/12025550123\?text=/);
+    // WhatsApp link is routed to DHIIL's own number (not the client's
+    // personal one), is fully URL-encoded, carries the job title +
+    // application URL, and never claims delivery.
+    expect(body.whatsappLink).toMatch(/^https:\/\/wa\.me\/251915253029\?text=/);
     const decoded = decodeURIComponent(body.whatsappLink.split("?text=")[1]);
     expect(decoded).toContain("Design a logo for my bakery");
     expect(decoded).toContain(`/jobs/${jobId}`);

@@ -73,6 +73,19 @@ export function generateWhatsAppShareLink(message: string): string {
   return `https://wa.me/?text=${encodeURIComponent(message)}`;
 }
 
+/**
+ * DHIIL's own WhatsApp relay number. Every job-application and
+ * professional-contact WhatsApp link is routed here — to a DHIIL number —
+ * rather than directly to the other party's personal phone, so DHIIL sees
+ * and can relay every job/skill request. Always available (no user
+ * "isWhatsapp" gate applies to it, since it isn't a user's own number).
+ */
+const DHIIL_WHATSAPP_DIGITS = "251915253029"; // +251 91 525 3029, no leading "+"
+
+export function generateDhiilWhatsAppLink(message: string): string {
+  return `https://wa.me/${DHIIL_WHATSAPP_DIGITS}?text=${encodeURIComponent(message)}`;
+}
+
 function line(label: string, value: string | number | null | undefined): string {
   if (value === null || value === undefined || value === "") return "";
   return `${label}:\n${value}\n\n`;

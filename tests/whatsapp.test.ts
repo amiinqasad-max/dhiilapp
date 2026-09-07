@@ -3,6 +3,7 @@ import {
   normalizePhoneNumber,
   generateWhatsAppLink,
   generateWhatsAppShareLink,
+  generateDhiilWhatsAppLink,
   WhatsAppTemplates,
 } from "@/lib/whatsapp";
 
@@ -46,6 +47,18 @@ describe("generateWhatsAppLink", () => {
   it("returns null when the phone number cannot be normalized", () => {
     expect(generateWhatsAppLink("not-a-number", "US", "hi")).toBeNull();
     expect(generateWhatsAppLink(null, "US", "hi")).toBeNull();
+  });
+});
+
+describe("generateDhiilWhatsAppLink", () => {
+  it("always points at DHIIL's own number, regardless of the message", () => {
+    const link = generateDhiilWhatsAppLink("Hello, world! & special <chars>");
+    expect(link).toMatch(/^https:\/\/wa\.me\/251915253029\?text=/);
+    expect(link).not.toContain(" ");
+    expect(link).not.toContain("<");
+    expect(link).not.toContain(">");
+    const decoded = decodeURIComponent(link.split("?text=")[1]);
+    expect(decoded).toBe("Hello, world! & special <chars>");
   });
 });
 

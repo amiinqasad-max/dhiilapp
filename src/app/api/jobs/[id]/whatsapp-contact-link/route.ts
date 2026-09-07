@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ApiException, requireRole, withErrorHandling } from "@/lib/api-utils";
-import { generateWhatsAppLink, WhatsAppTemplates } from "@/lib/whatsapp";
+import { generateDhiilWhatsAppLink, WhatsAppTemplates } from "@/lib/whatsapp";
 import { getServerLocale } from "@/lib/i18n/server";
 
 // Professional -> Client contact link about a specific job. Requires the
@@ -21,10 +21,8 @@ export const GET = withErrorHandling(async (_req: Request, { params }: { params:
     throw new ApiException(403, "Apply to this job before contacting the client on WhatsApp.", "MUST_APPLY_FIRST");
   }
 
-  if (!job.client.isWhatsapp) {
-    return NextResponse.json({ link: null });
-  }
-
+  // Routed to DHIIL's own WhatsApp number rather than the client's
+  // personal number, so every request is relayed through DHIIL.
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
   const message = WhatsAppTemplates.clientContact(
     {
@@ -36,6 +34,6 @@ export const GET = withErrorHandling(async (_req: Request, { params }: { params:
     getServerLocale()
   );
 
-  const link = generateWhatsAppLink(job.client.phoneNumber, job.client.phoneCountry, message);
+  const link = generateDhiilWhatsAppLink(message);
   return NextResponse.json({ link });
 });

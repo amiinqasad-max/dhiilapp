@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ApiException, requireUser, withErrorHandling } from "@/lib/api-utils";
-import { generateWhatsAppLink, WhatsAppTemplates } from "@/lib/whatsapp";
+import { generateDhiilWhatsAppLink, WhatsAppTemplates } from "@/lib/whatsapp";
 import { getServerLocale } from "@/lib/i18n/server";
 
 // Client -> Professional contact link. Generated server-side so the raw
@@ -15,10 +15,10 @@ export const GET = withErrorHandling(async (_req: Request, { params }: { params:
     include: { user: true },
   });
   if (!profile || !profile.user.isActive) throw new ApiException(404, "Professional not found.", "PROFESSIONAL_NOT_FOUND");
-  if (!profile.user.isWhatsapp) {
-    return NextResponse.json({ link: null });
-  }
 
+  // Routed to DHIIL's own WhatsApp number rather than the professional's
+  // personal number, so every skiller contact request is relayed through
+  // DHIIL.
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
   const message = WhatsAppTemplates.professionalContact(
     {
@@ -28,6 +28,6 @@ export const GET = withErrorHandling(async (_req: Request, { params }: { params:
     getServerLocale()
   );
 
-  const link = generateWhatsAppLink(profile.user.phoneNumber, profile.user.phoneCountry, message);
+  const link = generateDhiilWhatsAppLink(message);
   return NextResponse.json({ link });
 });
